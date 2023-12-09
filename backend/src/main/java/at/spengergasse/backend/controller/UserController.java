@@ -1,12 +1,15 @@
 package at.spengergasse.backend.controller;
 
-import at.spengergasse.backend.dto.UserDto;
+import at.spengergasse.backend.dto.UserDTO;
 import at.spengergasse.backend.model.User;
 import at.spengergasse.backend.persistence.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/users")
@@ -17,9 +20,13 @@ public class UserController
     private UserRepository userRepository;
 
     @GetMapping("/all")
-    public @ResponseBody Iterable<User> allUsers()
-    {
-        return userRepository.findAll();
+    public @ResponseBody Iterable<UserDTO> allUsers() {
+        List<User> users = userRepository.findAll();
+        List<UserDTO> userDTOs = users.stream()
+                .map(user -> new UserDTO(user.getId(), user.getEmail(), user.getFirstname(), user.getLastname(),
+                        user.getCreated(), user.getRoles()))
+                .collect(Collectors.toList());
+        return userDTOs;
     }
 
     @GetMapping("/login")
