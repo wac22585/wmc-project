@@ -45,26 +45,31 @@
             Btn,
         },
         methods: {
-            async login() {
-            try {
-                const response = true; // Replace this with your actual login logic
+        async login() {
+            /*try {
+                const email = this.email;
+                const password = this.password;
 
-                if (response) {
-                console.log('Login successful');
+                const response = await axios.post("api/users/login", {
+                    email: email,
+                    password: password
+                });
 
-                // Redirect to the home page
-                this.$router.push({ name: 'Home' });
+                if (response.status === 200 && response.data) {
+                    console.log('Login successful');
+                    this.$router.push({ name: 'Home' });
                 } else {
-                console.error('Login failed');
-                alert('Login failed. Please check your credentials.');
+                    console.error('Login failed');
+                    alert('Login failed. Please check your credentials.');
                 }
             } catch (error) {
                 console.error('Login error', error);
                 alert('An error occurred during login. Please try again later.');
-            }
-            },
+            }*/
+            this.$router.push({ name: 'Home' });
         },
-    };
+    },
+};
 </script>
 
 <style scoped>
