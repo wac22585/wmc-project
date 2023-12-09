@@ -14,7 +14,7 @@ import java.util.List;
 @Getter
 @Builder
 @ToString
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@AllArgsConstructor(access = AccessLevel.PUBLIC)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "users")
 public class User extends AbstractPersistable<Long>
@@ -22,6 +22,7 @@ public class User extends AbstractPersistable<Long>
     private String firstname;
     private String lastname;
     private String email;
+    private String password;
     private long phoneNumber;
     private boolean isDeleted;
     private Date created;
