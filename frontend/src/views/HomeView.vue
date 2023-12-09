@@ -17,9 +17,9 @@
             v-for="user in users"
             :key="user.id"
           >
-            <td> <span class="username">{{ user.name }}</span> <br> <span>{{ user.email }}</span></td>
-            <td>{{ user.created }}</td>
-            <td>{{ user.role }}</td>
+            <td> <span class="username">{{ user.firstname }} {{ user.lastname }}</span> <br> <span>{{ user.email }}</span></td>
+            <td>{{ new Date(user.created).toLocaleDateString("de-DE") }}</td>
+            <td>{{ user.roles }}</td>
             <td><button class="btn-more"><svg-icon type="mdi" :path="path"></svg-icon></button></td>
           </tr>
         </tbody>
@@ -42,24 +42,15 @@
     },
       data() {
           return {
-              users: [
-                {id: 1, name: "Emil Wache", email: "eow@gmx.at", created: "10.10.2023", role: "Gast"},
-                {id: 2, name: "Admin", email: "admin@spengergasse.at", created: "07.12.2023", role: "Administrator"},
-                {id: 3, name: "Test", email: "test@gmail.com", created: "14.11.2023", role: "Administrator"},
-                {id: 4, name: "Test", email: "test@gmail.com", created: "14.11.2023", role: "Administrator"},
-                {id: 5, name: "Test", email: "test@gmail.com", created: "14.11.2023", role: "Administrator"},
-                {id: 6, name: "Test", email: "test@gmail.com", created: "14.11.2023", role: "Administrator"},
-                {id: 7, name: "Test", email: "test@gmail.com", created: "14.11.2023", role: "Administrator"},
-                {id: 8, name: "Test", email: "test@gmail.com", created: "14.11.2023", role: "Administrator"},
-
-              ],
+              users: [],
               path: mdiDotsHorizontal,
           };
       },
       async mounted() {
           try {
-              //const response = await axios.get("users/all");
-              //this.users = response.date;
+              const response = await axios.get("users/all");
+              console.log(response);
+              this.users = response.data;
           }
           catch(e)
           {
