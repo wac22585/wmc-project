@@ -20,7 +20,7 @@
             <td> <span class="username">{{ user.name }}</span> <br> <span>{{ user.email }}</span></td>
             <td>{{ user.created }}</td>
             <td>{{ user.role }}</td>
-            <td><button><svg-icon type="mdi" :path="path"></svg-icon></button></td>
+            <td><button class="btn-more"><svg-icon type="mdi" :path="path"></svg-icon></button></td>
           </tr>
         </tbody>
       </v-table>
@@ -46,6 +46,12 @@
                 {id: 1, name: "Emil Wache", email: "eow@gmx.at", created: "10.10.2023", role: "Gast"},
                 {id: 2, name: "Admin", email: "admin@spengergasse.at", created: "07.12.2023", role: "Administrator"},
                 {id: 3, name: "Test", email: "test@gmail.com", created: "14.11.2023", role: "Administrator"},
+                {id: 4, name: "Test", email: "test@gmail.com", created: "14.11.2023", role: "Administrator"},
+                {id: 5, name: "Test", email: "test@gmail.com", created: "14.11.2023", role: "Administrator"},
+                {id: 6, name: "Test", email: "test@gmail.com", created: "14.11.2023", role: "Administrator"},
+                {id: 7, name: "Test", email: "test@gmail.com", created: "14.11.2023", role: "Administrator"},
+                {id: 8, name: "Test", email: "test@gmail.com", created: "14.11.2023", role: "Administrator"},
+
               ],
               path: mdiDotsHorizontal,
           };
@@ -84,5 +90,10 @@
 
   .username {
     font-weight: bold;
+  }
+
+  .btn-more {
+    border-radius: 50%;
+    padding: 2px 4px;
   }
 </style>

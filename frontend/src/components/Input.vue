@@ -1,8 +1,10 @@
 <template>
     <div class="input-container">
       <div class="input-with-icon">
-        <input :type="inputType === 'password' && showPassword ? 'text' : inputType" class="input-form" v-model="text" @focus="onFocus" @blur="onBlur">
-        <!-- Use Vuetify icon for password input -->
+        <input :type="inputType === 'password' && showPassword ? 'text' : inputType" 
+        class="input-form"
+        :value="modelValue"
+        @input="$emit('update:modelValue', $event.target.value)">
         <div v-if="inputType === 'password'" class="eye-icon" @click="togglePasswordVisibility">
           <v-icon>
             {{ showPassword ? 'mdi-eye' : 'mdi-eye-off' }}
@@ -11,20 +13,31 @@
       </div>
     </div>
   </template>
+
+  <script setup>
+  import { computed } from 'vue'
+
+  const props = defineProps(['modelValue', 'inputType'])
+  const emit = defineEmits(['update:modelValue'])
+
+  const value = computed({
+    get() {
+      return props.modelValue
+    },
+    set(value) {
+      emit('update:modelValue', value)
+    }
+  })
+  </script>
   
   <script>
   export default {
-    props: {
-      inputType: {
-        type: String,
-        default: 'text',
-        validator: value => ['text', 'password'].includes(value)
-      }
-    },
     data() {
       return {
         text: '',
-        showPassword: false
+        showPassword: false,
+        email: '',
+        password: '',
       };
     },
     methods: {
