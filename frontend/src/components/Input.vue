@@ -4,7 +4,13 @@
         <input :type="inputType === 'password' && showPassword ? 'text' : inputType" 
         class="input-form"
         :value="modelValue"
-        @input="$emit('update:modelValue', $event.target.value)">
+        @input="$emit('update:modelValue', $event.target.value)"
+        :style="{width: width}"
+        :placeholder="label"
+        >
+        <div v-if="search" class="search-icon">
+          <v-icon>mdi-magnify</v-icon>
+        </div>
         <div v-if="inputType === 'password'" class="eye-icon" @click="togglePasswordVisibility">
           <v-icon>
             {{ showPassword ? 'mdi-eye' : 'mdi-eye-off' }}
@@ -17,7 +23,7 @@
   <script setup>
   import { computed } from 'vue'
 
-  const props = defineProps(['modelValue', 'inputType'])
+  const props = defineProps(['modelValue', 'inputType', 'width', 'label', 'search'])
   const emit = defineEmits(['update:modelValue'])
 
   const value = computed({
@@ -77,12 +83,19 @@
     outline: none;
   }
   
-  .eye-icon {
+  .eye-icon, .search-icon {
     position: absolute;
     top: 50%;
-    right: 10px;
     transform: translateY(-50%);
     cursor: pointer;
+  }
+
+  .eye-icon {
+    right: 10px;
+  }
+
+  .search-icon {
+    left: 10px;
   }
   </style>
   

@@ -23,6 +23,11 @@ const routes = [
       }
     },
   },
+  {
+    path: '/add',
+    name: 'Add',
+    component: () => import('@/views/AddView.vue'),
+  }
 ];
 
 

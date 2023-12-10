@@ -2,6 +2,12 @@
   <v-container>
     <div class="title">Users</div>
     <div class="subtitle">view and manage users</div>
+    <div class="add-btns">
+     <InputField width="700px" label="Search" class="inputfield"> </InputField>
+     <v-divider vertical class="mx-2"></v-divider>
+     <Button content="Filter" />
+     <Button content="Add" @click="add"/>
+    </div>
     <div>
       <v-table>
         <thead>
@@ -30,7 +36,8 @@
 
 <script setup> 
   import axios from 'axios';
-
+  import InputField from '@/components/Input.vue';
+  import Button from '@/components/Button-Settings.vue'
   import SvgIcon from '@jamescoyle/vue-icon';
   import { mdiDotsHorizontal } from '@mdi/js';
 </script>
@@ -38,7 +45,9 @@
 <script>
   export default {
     components: {
-      SvgIcon
+      SvgIcon,
+      InputField,
+      Button,
     },
       data() {
           return {
@@ -58,7 +67,9 @@
           }
       },
       methods: {
-
+        add() {
+          this.$router.push({ name: 'Add' });
+        }
       },
   }
 </script>
@@ -86,5 +97,9 @@
   .btn-more {
     border-radius: 50%;
     padding: 2px 4px;
+  }
+
+  .inputfield {
+    display: inline-block;
   }
 </style>
