@@ -5,6 +5,7 @@ import at.spengergasse.backend.model.User;
 import at.spengergasse.backend.persistence.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,11 +23,11 @@ public class UserController
     @GetMapping("/all")
     public @ResponseBody Iterable<UserDTO> allUsers() {
         List<User> users = userRepository.findAll();
-        List<UserDTO> userDTOs = users.stream()
+        return users.stream()
+                .filter(u -> !u.isDeleted())
                 .map(user -> new UserDTO(user.getId(), user.getEmail(), user.getFirstname(), user.getLastname(),
                         user.getCreated(), user.getRoles()))
                 .collect(Collectors.toList());
-        return userDTOs;
     }
 
     @GetMapping("/login")
@@ -52,6 +53,24 @@ public class UserController
         {
             return new ResponseEntity("Error", HttpStatus.BAD_REQUEST);
         }
+    }
 
+    @PutMapping("delete/{id}")
+    public @ResponseStatus ResponseEntity delete(@PathVariable final Long id)
+    {
+        User user = userRepository.findById(id);
+        if(user != null)
+        {
+            try
+            {
+                user.setDeleted(true);
+                userRepository.save(user);
+                return new ResponseEntity("OK", HttpStatusCode.valueOf(200));
+            } catch (Exception e)
+            {
+                return new ResponseEntity("Error", HttpStatus.BAD_REQUEST);
+            }
+        }
+        return new ResponseEntity("Not found", HttpStatus.NOT_FOUND);
     }
 }

@@ -1,5 +1,6 @@
 package at.spengergasse.backend.model;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import jakarta.persistence.Entity;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
@@ -32,4 +33,9 @@ public class User extends AbstractPersistable<Long>
     private CountryNumber countryNumber;
     @OneToMany
     private List<UserRole> roles;
+
+    public void setDeleted(boolean deleted)
+    {
+        this.isDeleted = deleted;
+    }
 }
