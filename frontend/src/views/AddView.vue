@@ -37,7 +37,9 @@
             <v-row>
                 <v-col>
                     <label for="">Roles</label>
-                    <InputField></InputField>
+                    <Select
+                        :roles=roles
+                    ></Select>
                 </v-col>
                 <v-col>
                     <label for="">Date of Birth</label>
@@ -75,6 +77,7 @@
 <script>
     import InputField from '@/components/Input.vue';
     import Btn from '@/components/Button.vue';
+    import Select from '@/components/Select.vue';
     import axios from 'axios';
 
     export default {
@@ -82,11 +85,27 @@
             return {
                 user: {},
                 confirmpassword: '',
+                roles: [],
+                selectedRoles: [],
             }
         },
         components: {
             InputField,
             Btn,
+            Select,
+        },
+        async mounted() {
+            try {
+                const response = await axios.get('roles/all');
+                for(const r of response.data) 
+                {
+                    const name = r.name.charAt(0) + r.name.slice(1).toLowerCase()
+                    name.replace("_", " ");
+                    this.roles.push(name);
+                }
+            } catch (error) {
+                console.log('An error occurred: ', error)
+            }
         },
         methods: {
             back() {
@@ -95,6 +114,7 @@
             async addUser() {
                 try {
                     let user = this.user;
+                    console.log(this.selectedRoles);
 
                     user.firstname = user.firstname.charAt(0).toUpperCase() + user.firstname.slice(1);
                     user.lastname = user.lastname.charAt(0).toUpperCase() + user.lastname.slice(1);
