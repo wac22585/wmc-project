@@ -37,9 +37,7 @@
             <v-row>
                 <v-col>
                     <label for="">Roles</label>
-                    <Select
-                        :roles=roles
-                    ></Select>
+                    <Select :roles="roles" v-model="selectedRoles" />
                 </v-col>
                 <v-col>
                     <label for="">Date of Birth</label>
@@ -114,7 +112,6 @@
             async addUser() {
                 try {
                     let user = this.user;
-                    console.log(this.selectedRoles);
 
                     user.firstname = user.firstname.charAt(0).toUpperCase() + user.firstname.slice(1);
                     user.lastname = user.lastname.charAt(0).toUpperCase() + user.lastname.slice(1);
