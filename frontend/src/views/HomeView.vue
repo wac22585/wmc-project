@@ -26,7 +26,16 @@
             <td> <span class="username">{{ user.firstname }} {{ user.lastname }}</span> <br> <span>{{ user.email }}</span></td>
             <td>{{ new Date(user.created).toLocaleDateString("de-DE") }}</td>
             <td>{{ user.roles }}</td>
-            <td><button class="btn-more"><svg-icon type="mdi" :path="path"></svg-icon></button></td>
+            <td>
+              <v-menu location="end">
+                <template v-slot:activator="{ props }">
+                  <button class="btn-more" v-bind="props"><svg-icon type="mdi" :path="path"></svg-icon></button>
+                </template>
+                <div class="menu" elevation="3" transition="false">
+                  <v-btn variant="text" @click="remove(user.id)">Delete</v-btn>
+                </div>
+              </v-menu>
+            </td>
           </tr>
         </tbody>
       </v-table>
@@ -69,6 +78,20 @@
       methods: {
         add() {
           this.$router.push({ name: 'Add' });
+        },
+        async remove(id) {
+          try {
+            console.log("id:", id)
+            const response = await axios.put(`users/delete/${id}`);
+
+            if (response.data === 'OK') {
+              this.users = this.users.filter(user => user.id !== id);
+            } else {
+              console.error('Error deleting user:', response.data);
+            }
+          } catch (e) {
+            alert(e);
+          }
         }
       },
   }
@@ -96,10 +119,16 @@
 
   .btn-more {
     border-radius: 50%;
-    padding: 2px 4px;
+    padding: 2px;
   }
 
   .inputfield {
     display: inline-block;
+  }
+
+  .menu {
+    border: solid 1px #707070;
+    border-radius: 10px;
+    margin-right: 10px;
   }
 </style>

@@ -1,7 +1,7 @@
 <template>
   <select id="mySelect" v-model="selectedRoles" class="select" name="Roles">
     <option value="" disabled>Select a role</option>
-    <option v-for="role in roles" :key="role" :value="role">{{ role }}</option>
+    <option v-for="role in roles" :key="role.id" :value="role.id">{{ role.name }}</option>
   </select>
 </template>
 

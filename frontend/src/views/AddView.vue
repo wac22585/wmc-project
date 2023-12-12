@@ -99,7 +99,8 @@
                 {
                     const name = r.name.charAt(0) + r.name.slice(1).toLowerCase()
                     name.replace("_", " ");
-                    this.roles.push(name);
+                    const role = {id: r.id, name: name};
+                    this.roles.push(role);
                 }
             } catch (error) {
                 console.log('An error occurred: ', error)
@@ -117,6 +118,7 @@
                     user.lastname = user.lastname.charAt(0).toUpperCase() + user.lastname.slice(1);
                     user.phonenumber = null;
                     user.created = new Date().toISOString().slice(0, 10);
+                    user.roles = this.selectedRoles;
 
                     const response = await axios.post('users/add', user);
 
