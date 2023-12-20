@@ -3,10 +3,10 @@
     <div class="title">Users</div>
     <div class="subtitle">view and manage users</div>
     <div class="add-btns">
-     <InputField width="700px" label="Search" class="inputfield"> </InputField>
-     <v-divider vertical class="mx-2"></v-divider>
-     <Button content="Filter" />
-     <Button content="Add" @click="add"/>
+      <InputField width="700px" label="Search" class="inputfield"></InputField>
+      <v-divider vertical class="mx-2"></v-divider>
+      <Button content="Filter" />
+      <Button content="Add" @click="add" />
     </div>
     <div>
       <v-table>
@@ -19,22 +19,40 @@
           </tr>
         </thead>
         <tbody>
-          <tr
-            v-for="user in users"
-            :key="user.id"
-          >
-            <td> <span class="username">{{ user.firstname }} {{ user.lastname }}</span> <br> <span>{{ user.email }}</span></td>
+          <tr v-for="(user, index) in users" :key="user.id">
+            <td>
+              <span class="username">{{ user.firstname }} {{ user.lastname }}</span><br>
+              <span>{{ user.email }}</span>
+            </td>
             <td>{{ new Date(user.created).toLocaleDateString("de-DE") }}</td>
             <td>{{ user.roles }}</td>
             <td>
-              <v-menu location="end">
-                <template v-slot:activator="{ props }">
-                  <button class="btn-more" v-bind="props"><svg-icon type="mdi" :path="path"></svg-icon></button>
+              <v-dialog v-model="dialogs[index].showOuterDialog" width="275">
+                <template v-slot:activator="{ on, attrs }">
+                  <button class="btn-more" v-on="on" v-bind="attrs"><svg-icon type="mdi" :path="path"></svg-icon></button>
                 </template>
-                <div class="menu" elevation="3" transition="false">
-                  <v-btn variant="text" @click="remove(user.id)">Delete</v-btn>
-                </div>
-              </v-menu>
+                <v-card class="popup-window">
+                  <v-card-title>
+                    {{ user.firstname }} {{ user.lastname }}
+                  </v-card-title>
+                  <v-card-text class="text-center">
+                    <v-btn elevation="0" class="action-btn" @click="remove(user.id)">Update</v-btn>
+                    <v-btn elevation="0" class="action-btn delete-btn" @click="openInnerDialog(index)">Delete</v-btn>
+                  </v-card-text>
+                </v-card>
+              </v-dialog>
+              <!-- Inner Dialog -->
+              <v-dialog v-model="dialogs[index].showInnerDialog" width="275">
+                <v-card class="popup-window">
+                  <v-card-text>
+                    Confirm delete user: {{ user.firstname }} {{ user.lastname }}?
+                  </v-card-text>
+                  <v-card-actions>
+                    <v-btn text @click="deleteUser(user.id, index)">Confirm</v-btn>
+                    <v-btn text @click="closeInnerDialog(index)">Cancel</v-btn>
+                  </v-card-actions>
+                </v-card>
+              </v-dialog>
             </td>
           </tr>
         </tbody>
@@ -43,58 +61,66 @@
   </v-container>
 </template>
 
-<script setup> 
-  import axios from 'axios';
-  import InputField from '@/components/Input.vue';
-  import Button from '@/components/Button-Settings.vue'
-  import SvgIcon from '@jamescoyle/vue-icon';
-  import { mdiDotsHorizontal } from '@mdi/js';
+<script setup>
+import axios from 'axios';
+import InputField from '@/components/Input.vue';
+import Button from '@/components/Button-Settings.vue';
+import SvgIcon from '@jamescoyle/vue-icon';
+import { mdiDotsHorizontal } from '@mdi/js';
 </script>
 
 <script>
-  export default {
-    components: {
-      SvgIcon,
-      InputField,
-      Button,
+export default {
+  components: {
+    SvgIcon,
+    InputField,
+    Button,
+  },
+  data() {
+    return {
+      users: [],
+      dialogs: [],
+      path: mdiDotsHorizontal,
+    };
+  },
+  async mounted() {
+    try {
+      const response = await axios.get('users/all');
+      this.users = response.data;
+      this.dialogs = this.users.map(() => ({ showOuterDialog: false, showInnerDialog: false }));
+    } catch (e) {
+      alert(e);
+    }
+  },
+  methods: {
+    add() {
+      this.$router.push({ name: 'Add' });
     },
-      data() {
-          return {
-              users: [],
-              path: mdiDotsHorizontal,
-          };
-      },
-      async mounted() {
-          try {
-              const response = await axios.get("users/all");
-              console.log(response);
-              this.users = response.data;
-          }
-          catch(e)
-          {
-              alert(e)
-          }
-      },
-      methods: {
-        add() {
-          this.$router.push({ name: 'Add' });
-        },
-        async remove(id) {
-          try {
-            console.log("id:", id)
-            const response = await axios.put(`users/delete/${id}`);
-
-            if (response.data === 'OK') {
-              this.users = this.users.filter(user => user.id !== id);
-            } else {
-              console.error('Error deleting user:', response.data);
-            }
-          } catch (e) {
-            alert(e);
-          }
+    async remove(id) {
+      // Placeholder for update functionality
+      console.log('Update user with id:', id);
+    },
+    async deleteUser(id, index) {
+      try {
+        const response = await axios.put(`users/delete/${id}`);
+        if (response.data === 'OK') {
+          this.users.splice(index, 1);
+          this.dialogs.splice(index, 1);
+        } else {
+          console.error('Error deleting user:', response.data);
         }
-      },
-  }
+      } catch (e) {
+        alert(e);
+      }
+    },
+    openInnerDialog(index) {
+      this.dialogs[index].showInnerDialog = true;
+    },
+    closeInnerDialog(index) {
+      this.dialogs[index].showInnerDialog = false;
+    },
+  },
+};
 </script>
 
 <style scoped>
@@ -130,5 +156,21 @@
     border: solid 1px #707070;
     border-radius: 10px;
     margin-right: 10px;
+  }
+
+  .action-btn {
+    background: white;
+    border: 1px black solid;
+    margin: 5px;
+    border-radius: 20px;
+  }
+
+  .delete-btn {
+    background: black;
+    color: white;
+  }
+
+  .popup-window {
+    border-radius: 20px !important;
   }
 </style>
