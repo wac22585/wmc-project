@@ -1,11 +1,12 @@
 // Plugins
-import vue from '@vitejs/plugin-vue'
-import vuetify, { transformAssetUrls } from 'vite-plugin-vuetify'
-import ViteFonts from 'unplugin-fonts/vite'
+import vue from '@vitejs/plugin-vue';
+import vuetify, { transformAssetUrls } from 'vite-plugin-vuetify';
+import ViteFonts from 'unplugin-fonts/vite';
 
 // Utilities
-import { defineConfig } from 'vite'
-import { fileURLToPath, URL } from 'node:url'
+import { defineConfig } from 'vite';
+import { fileURLToPath, URL } from 'node:url';
+import rimraf from 'rimraf'; // Import rimraf
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -13,7 +14,6 @@ export default defineConfig({
     vue({
       template: { transformAssetUrls }
     }),
-    // https://github.com/vuetifyjs/vuetify-loader/tree/next/packages/vite-plugin
     vuetify({
       autoImport: true,
       styles: {
@@ -51,4 +51,8 @@ export default defineConfig({
     outDir: '../backend/src/main/resources/static',
     publicDir: 'static',
   },
-})
+  buildStart: () => {
+    // Delete the assets folder before the build starts
+    rimraf.sync('../backend/src/main/resources/static/assets');
+  }
+});
