@@ -12,10 +12,16 @@ import lombok.*;
 @Table(name = "userroles")
 public class UserRole
 {
-    @Id
-    @ManyToOne(cascade = CascadeType.PERSIST)
-    private User user;
-    @Id
+    @EmbeddedId
+    private UserRoleId id;
+
     @ManyToOne
+    @MapsId("userId")
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    @ManyToOne
+    @MapsId("roleId")
+    @JoinColumn(name = "role_id")
     private Role role;
 }
