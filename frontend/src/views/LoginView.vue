@@ -11,12 +11,14 @@
                     <div>
                         <InputField
                         :model-value="email" @update:model-value="newValue => email = newValue" inputType="text"></InputField>
+                        
                     </div>
                     <v-text-body1>Password</v-text-body1>
                     <div>
                         <InputField 
                         :model-value="password" @update:model-value="newValue => password = newValue" inputType="password"></InputField>
                     </div>
+                    <div v-if="invalidLogin" class="error-message">{{ invalidLogin }}</div>
                 </div>
                 <div class="btn-div">
                     <Btn type="submit" label="Continue"/>
@@ -37,6 +39,7 @@
             return {
                 email: '',
                 password: '',
+                invalidLogin: '',
             };
         },
         components: {
@@ -46,25 +49,32 @@
         methods: {
         async login() {
             try {
+                this.invalidLogin = '';
                 const email = this.email;
                 const password = this.password;
 
-                console.log(this.email, this.password)
+                const response = await axios.get('/users/login', {
+                    params: {
+                        email: email,
+                        password: encodeURIComponent(password)
+                    }
+                });
 
-                const response = await 
-                axios.get(`users/login?email=${email}&password=${encodeURIComponent(password)}`);
-                
+                if(response.status === 200 && response.data) {
+                    console.log('Login successfull', response.data);
+                    this.$router.push({name: 'Home'});
 
-                if (response.status === 200 && response.data) {
-                    console.log('Login successful');
-                    this.$router.push({ name: 'Home' });
+                    localStorage.setItem('authToken', response.data.token);
                 } else {
-                    console.error('Login failed');
-                    alert('Login failed. Please check your credentials.');
+                    console.log('Login failed');
+                    alert('Login failed. Please check your credentials');
                 }
             } catch (error) {
-                console.error('Login error', error);
-                alert('An error occurred during login. Please try again later.');
+                if (error.response && error.response.status === 401) {
+                    this.invalidLogin = 'Invalid email or password';
+                } else {
+                    this.invalidLogin = 'An error occurred.';
+                }
             }
         },
     },
@@ -103,5 +113,11 @@
     .btn-div {
         display: flex;
         justify-content: end;
+    }
+
+    .error-message {
+        color: red;
+        font-size: 12px;
+        margin-top: 5px;
     }
 </style>
