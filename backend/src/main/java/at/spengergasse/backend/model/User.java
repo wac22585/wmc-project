@@ -5,10 +5,13 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.jpa.domain.AbstractPersistable;
 
+import org.mindrot.jbcrypt.BCrypt;
+
 import java.util.Date;
 import java.util.List;
 
 @Entity
+@Setter
 @Getter
 @Builder
 @ToString
@@ -20,7 +23,7 @@ public class User extends AbstractPersistable<Long>
     private String firstname;
     private String lastname;
     private String email;
-    private String password;
+    private String passwordHash;
     private long phoneNumber;
     private boolean isDeleted;
     private Date created;
@@ -35,5 +38,13 @@ public class User extends AbstractPersistable<Long>
     public void setDeleted(boolean deleted)
     {
         this.isDeleted = deleted;
+    }
+
+    public void setPassword(String password) {
+        this.passwordHash = BCrypt.hashpw(password, BCrypt.gensalt());
+    }
+
+    public boolean verifyPassword(String password) {
+        return BCrypt.checkpw(password, this.passwordHash);
     }
 }

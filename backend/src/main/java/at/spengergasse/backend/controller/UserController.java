@@ -41,16 +41,21 @@ public class UserController
        if(password == null || password.isBlank()) return ResponseEntity.badRequest().body("Password is required.");
 
        User user = userRepository.findByEmail(email);
-       if(user == null || !user.getPassword().equals(password))
+       if(user == null || !user.verifyPassword(password))
        {
            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password.");
        }
 
        String authToken = generateAuthToken();
 
+       user.setAuthToken(authToken);
+       userRepository.save(user);
+
+       UserDTO userDTO = new UserDTO(user.getId(), user.getEmail(), user.getFirstname(), user.getLastname(), user.getCreated(), user.getRoles());
+
        Map<String, Object> response = new HashMap<>();
        response.put("token", authToken);
-       response.put("user", user);
+       response.put("user", userDTO);
 
        return ResponseEntity.ok(response);
     }
@@ -97,4 +102,6 @@ public class UserController
 
         return authToken;
     }
+
+
 }
