@@ -1,5 +1,6 @@
 package at.spengergasse.backend.model;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -21,6 +22,6 @@ public class CountryNumber extends AbstractPersistable<Long>
     private String countrycode;
     private int dialCode;
     private String flagImage;
-    @OneToMany
+    @OneToMany(cascade = CascadeType.PERSIST, mappedBy = "countryNumber")
     private List<User> users;
 }
