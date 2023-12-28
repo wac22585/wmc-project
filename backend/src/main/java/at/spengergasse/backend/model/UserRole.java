@@ -1,9 +1,6 @@
 package at.spengergasse.backend.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
@@ -16,7 +13,7 @@ import lombok.*;
 public class UserRole
 {
     @Id
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.PERSIST)
     private User user;
     @Id
     @ManyToOne

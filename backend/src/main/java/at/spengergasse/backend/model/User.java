@@ -1,10 +1,7 @@
 package at.spengergasse.backend.model;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import jakarta.persistence.Entity;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.jpa.domain.AbstractPersistable;
 
@@ -29,9 +26,10 @@ public class User extends AbstractPersistable<Long>
     private Date created;
     private Date deleted;
     private String userImage;
-    @ManyToOne
+    private String authToken;
+    @ManyToOne(cascade = CascadeType.PERSIST)
     private CountryNumber countryNumber;
-    @OneToMany
+    @OneToMany(cascade = CascadeType.PERSIST, mappedBy = "user")
     private List<UserRole> roles;
 
     public void setDeleted(boolean deleted)
