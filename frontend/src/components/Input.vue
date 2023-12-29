@@ -71,7 +71,7 @@
   
   .input-form {
     border: #707070 1px solid;
-    height: 40px;
+    height: 50px;
     width: 400px;
     margin: 10px 0px;
     border-radius: 7px;
