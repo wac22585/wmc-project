@@ -7,6 +7,7 @@ import org.springframework.data.jpa.domain.AbstractPersistable;
 
 import org.mindrot.jbcrypt.BCrypt;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -26,19 +27,14 @@ public class User extends AbstractPersistable<Long>
     private String passwordHash;
     private long phoneNumber;
     private boolean isDeleted;
-    private Date created;
-    private Date deleted;
+    private LocalDateTime created;
+    private LocalDateTime deleted;
     private String userImage;
     private String authToken;
     @ManyToOne(cascade = CascadeType.PERSIST)
     private CountryNumber countryNumber;
     @OneToMany(cascade = CascadeType.PERSIST, mappedBy = "user")
     private List<UserRole> roles;
-
-    public void setDeleted(boolean deleted)
-    {
-        this.isDeleted = deleted;
-    }
 
     public void setPassword(String password) {
         this.passwordHash = BCrypt.hashpw(password, BCrypt.gensalt());

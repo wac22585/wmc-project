@@ -2,6 +2,7 @@ package at.spengergasse.backend.controller;
 
 import at.spengergasse.backend.dto.UserDTO;
 import at.spengergasse.backend.model.User;
+import at.spengergasse.backend.model.UserRole;
 import at.spengergasse.backend.persistence.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -10,10 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.SecureRandom;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.time.LocalDateTime;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
@@ -58,20 +57,36 @@ public class UserController
        response.put("user", userDTO);
 
        return ResponseEntity.ok(response);
+    }@PostMapping("/add")
+public ResponseEntity<?> createUser(@RequestParam("firstname") String firstname,
+                                    @RequestParam("lastname") String lastname,
+                                    @RequestParam("email") String email,
+                                    @RequestParam("password") String password,
+                                    @RequestParam("number") long phoneNumber)
+{
+    if(firstname == null || firstname.isBlank() || lastname == null || lastname.isBlank() ||
+            email == null || email.isBlank() || password == null || password.isBlank()){
+        return ResponseEntity.badRequest().body("Argument missing!");
     }
+    User user = User.builder()
+            .firstname(firstname)
+            .lastname(lastname)
+            .email(email)
+            .phoneNumber(phoneNumber)
+            .created(LocalDateTime.now())
+            .isDeleted(false)
+            .userImage(null)
+            .authToken(null)
+            .deleted(null)
+            .roles(null)
+            .build();
+    user.setPassword(password);
+    userRepository.save(user);
 
-    @PostMapping("/add")
-    public @ResponseStatus ResponseEntity createUser(@RequestBody User user)
-    {
-        try
-        {
-            userRepository.save(user);
-            return new ResponseEntity("OK", HttpStatus.CREATED);
-        } catch (Exception e)
-        {
-            return new ResponseEntity("Error", HttpStatus.BAD_REQUEST);
-        }
-    }
+    return ResponseEntity.ok("Added user successfully");
+}
+
+
 
     @PutMapping("delete/{id}")
     public @ResponseStatus ResponseEntity delete(@PathVariable final Long id)
