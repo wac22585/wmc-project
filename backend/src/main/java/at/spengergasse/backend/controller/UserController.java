@@ -62,7 +62,8 @@ public ResponseEntity<?> createUser(@RequestParam("firstname") String firstname,
                                     @RequestParam("lastname") String lastname,
                                     @RequestParam("email") String email,
                                     @RequestParam("password") String password,
-                                    @RequestParam("number") long phoneNumber)
+                                    @RequestParam("number") long phoneNumber,
+                                    @RequestParam(value = "birthdate", required = false) Date birthdate)
 {
     if(firstname == null || firstname.isBlank() || lastname == null || lastname.isBlank() ||
             email == null || email.isBlank() || password == null || password.isBlank()){
@@ -80,6 +81,7 @@ public ResponseEntity<?> createUser(@RequestParam("firstname") String firstname,
             .deleted(null)
             .roles(null)
             .build();
+    if(birthdate != null) user.setBirthdate(birthdate);
     user.setPassword(password);
     userRepository.save(user);
 

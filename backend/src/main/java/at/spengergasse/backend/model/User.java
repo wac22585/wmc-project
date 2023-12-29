@@ -26,6 +26,7 @@ public class User extends AbstractPersistable<Long>
     private String email;
     private String passwordHash;
     private long phoneNumber;
+    private Date birthdate;
     private boolean isDeleted;
     private LocalDateTime created;
     private LocalDateTime deleted;
