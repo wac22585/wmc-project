@@ -1,15 +1,23 @@
 package at.spengergasse.backend.controller;
 
 import at.spengergasse.backend.dto.UserDTO;
+import at.spengergasse.backend.model.Role;
 import at.spengergasse.backend.model.User;
 import at.spengergasse.backend.model.UserRole;
+import at.spengergasse.backend.model.UserRoleId;
+import at.spengergasse.backend.persistence.RoleRepository;
 import at.spengergasse.backend.persistence.UserRepository;
+import at.spengergasse.backend.persistence.UserRoleRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.lang.reflect.Type;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -22,6 +30,11 @@ public class UserController
 {
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private RoleRepository roleRepository;
+    @Autowired
+    private UserRoleRepository userRoleRepository;
 
     @GetMapping("/all")
     public @ResponseBody Iterable<UserDTO> allUsers() {
@@ -57,36 +70,51 @@ public class UserController
        response.put("user", userDTO);
 
        return ResponseEntity.ok(response);
-    }@PostMapping("/add")
-public ResponseEntity<?> createUser(@RequestParam("firstname") String firstname,
-                                    @RequestParam("lastname") String lastname,
-                                    @RequestParam("email") String email,
-                                    @RequestParam("password") String password,
-                                    @RequestParam("number") long phoneNumber,
-                                    @RequestParam(value = "birthdate", required = false) Date birthdate)
-{
-    if(firstname == null || firstname.isBlank() || lastname == null || lastname.isBlank() ||
-            email == null || email.isBlank() || password == null || password.isBlank()){
-        return ResponseEntity.badRequest().body("Argument missing!");
     }
-    User user = User.builder()
-            .firstname(firstname)
-            .lastname(lastname)
-            .email(email)
-            .phoneNumber(phoneNumber)
-            .created(LocalDateTime.now())
-            .isDeleted(false)
-            .userImage(null)
-            .authToken(null)
-            .deleted(null)
-            .roles(null)
-            .build();
-    if(birthdate != null) user.setBirthdate(birthdate);
-    user.setPassword(password);
-    userRepository.save(user);
+    @PostMapping("/add")
+    public ResponseEntity<?> createUser(@RequestParam("firstname") String firstname,
+                                        @RequestParam("lastname") String lastname,
+                                        @RequestParam("email") String email,
+                                        @RequestParam("password") String password,
+                                        @RequestParam("number") long phoneNumber,
+                                        @RequestParam(value = "birthdate", required = false) Date birthdate,
+                                        @RequestParam(value = "roles") List<Long> roleIds)
+    {
+        if(firstname == null || firstname.isBlank() || lastname == null || lastname.isBlank() || email == null ||
+                email.isBlank() || password == null || password.isBlank() || roleIds.isEmpty()){
+            return ResponseEntity.badRequest().body("Argument missing!");
+        }
 
-    return ResponseEntity.ok("Added user successfully");
-}
+        User user = User.builder()
+                .firstname(firstname)
+                .lastname(lastname)
+                .email(email)
+                .phoneNumber(phoneNumber)
+                .created(LocalDateTime.now())
+                .isDeleted(false)
+                .userImage(null)
+                .authToken(null)
+                .deleted(null)
+                .build();
+        if(birthdate != null) user.setBirthdate(birthdate);
+        user.setPassword(password);
+        userRepository.save(user);
+
+
+        for(Long roleId : roleIds) {
+            Role role = roleRepository.findById(roleId);
+            if(role != null) {
+                UserRole userRole = UserRole.builder()
+                        .id(new UserRoleId(user.getId(), roleId))
+                        .user(user)
+                        .role(role)
+                        .build();
+                userRoleRepository.save(userRole);
+            }
+        }
+
+        return ResponseEntity.ok("Added user successfully");
+    }
 
 
 

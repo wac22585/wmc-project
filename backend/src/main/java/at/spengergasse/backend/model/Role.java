@@ -1,5 +1,6 @@
 package at.spengergasse.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.jpa.domain.AbstractPersistable;
@@ -18,5 +19,6 @@ public class Role extends AbstractPersistable<Long>
     @Enumerated(EnumType.STRING)
     private ERoles name;
     @OneToMany(mappedBy = "role")
+    @JsonIgnore
     private List<UserRole> userRoles;
 }

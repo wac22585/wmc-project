@@ -8,4 +8,4 @@ import java.util.Date;
 import java.util.List;
 
 public record UserDTO(Long id, String email, String firstname,
-                      String lastname, LocalDateTime created, List<UserRole> roles) { }
+                      String lastname, LocalDateTime created, List<String> roles) { }

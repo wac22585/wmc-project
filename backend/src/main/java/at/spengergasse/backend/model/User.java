@@ -1,5 +1,6 @@
 package at.spengergasse.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import jakarta.persistence.*;
 import lombok.*;
@@ -10,6 +11,7 @@ import org.mindrot.jbcrypt.BCrypt;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity
 @Setter
@@ -35,6 +37,7 @@ public class User extends AbstractPersistable<Long>
     @ManyToOne(cascade = CascadeType.PERSIST)
     private CountryNumber countryNumber;
     @OneToMany(cascade = CascadeType.PERSIST, mappedBy = "user")
+    @JsonIgnore
     private List<UserRole> roles;
 
     public void setPassword(String password) {
@@ -43,5 +46,11 @@ public class User extends AbstractPersistable<Long>
 
     public boolean verifyPassword(String password) {
         return BCrypt.checkpw(password, this.passwordHash);
+    }
+
+    public List<String> getRoles()
+    {
+        return this.roles.stream()
+                .map(userRole -> userRole.getRole().getName().toString()).collect(Collectors.toList());
     }
 }
