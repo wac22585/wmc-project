@@ -9,23 +9,23 @@
             <v-form @submit-prevent="addUser">
                 <v-row>
                     <v-col>
-                        <label for="">Firstname</label>
-                        <InputField class="inputfield"
+                        <label for="">Firstname*</label>
+                        <InputField class="inputfield" required
                         :model-value="user.firstname" 
                         @update:model-value="newValue => user.firstname = newValue" inputType="text" />
                     </v-col>
                     <v-col>
-                        <label for="">Lastname</label>
+                        <label for="">Lastname*</label>
                         <InputField
-                        :model-value="user.lastname" 
+                        :model-value="user.lastname" required
                         @update:model-value="newValue => user.lastname = newValue" inputType="text" />
                     </v-col>
                 </v-row>
 
                 <v-row>
                     <v-col>
-                        <label for="">E-Mail-Address</label>
-                        <InputField class="inputfield" 
+                        <label for="">E-Mail-Address*</label>
+                        <InputField class="inputfield" required
                         :model-value="user.email" 
                         @update:model-value="newValue => user.email = newValue" inputType="text" />
                     </v-col>
@@ -37,7 +37,7 @@
 
                 <v-row>
                     <v-col>
-                        <label for="">Roles</label>
+                        <label for="">Roles*</label>
                         <v-select
                             :items="roles"
                             v-model="selectedRoles"
@@ -45,9 +45,20 @@
                             density="compact"
                             variant="plain"
                             multiple
-                            chips
                             class="select"
-                        ></v-select>
+                        >
+                            <template v-slot:selection="{item, index}">
+                                <v-chip v-if="index < 2">
+                                    <span>{{ item.title }}</span>
+                                </v-chip>
+                                <span 
+                                v-if="index === 2"
+                                class="text-grey text-caption align-self-center"
+                                >
+                                    (+{{ selectedRoles.length - 2 }} others)
+                                </span>
+                            </template>
+                        </v-select>
                     </v-col>
                     <v-col>
                         <label for="">Date of Birth</label>
@@ -88,20 +99,20 @@
 
                 <v-row>
                     <v-col>
-                        <label for="">Password</label>
+                        <label for="">Password*</label>
                         <InputField class="inputfield" 
-                            width="400px"
-                            :model-value="user.password" 
-                            @update:model-value="newValue => user.password = newValue" />
+                            width="400px" required
+                            :model-value="password" 
+                            @update:model-value="newValue => password = newValue" inputType="secure"/>
                     </v-col>
                     <v-col>
-                        <label for="">Confirm Password</label>
+                        <label for="">Confirm Password*</label>
                         <InputField 
-                            :model-value="confirmpassword" 
-                            @update:model-value="newValue => confirmpassword = newValue" />
+                            :model-value="confirmpassword" required
+                            @update:model-value="newValue => confirmpassword = newValue" inputType="secure"/>
                     </v-col>
                 </v-row>
-
+                <div v-if="invalidInput" class="error-message">{{ invalidInput }}</div>
                 <v-row>
                     <v-col>
                         <div class="btn-div">
@@ -119,18 +130,21 @@
     import Btn from '@/components/Button.vue';
     import axios from 'axios';
     import LoginView from './LoginView.vue';
+import { setTransitionHooks } from 'vue';
 
     export default {
         data() {
             return {
                 user: {},
                 confirmpassword: '',
+                password: '',
+                invalidInput: '',
                 roles: [],
                 selectedRoles: [],
                 dob: {
-                    month: '',
-                    date: '',
-                    year: ''
+                    month: 'Month',
+                    day: 'Day',
+                    year: 'Year'
                 },
                 months: [
                     'January', 'February', 'March', 'April', 'May', 'June',
@@ -156,12 +170,11 @@
                 const response = await axios.get('roles/all');
                 for(const r of response.data) 
                 {
-                    const name = r.name.charAt(0) + r.name.slice(1).toLowerCase()
-                    name.replace("_", " ");
+                    let name = r.name.charAt(0) + r.name.slice(1).toLowerCase()
+                    name = name.replace("_w", " W");
                     const role = {id: r.id, name: name};
                     this.roles.push(name);
                 }
-                console.log(this.roles)
             } catch (error) {
                 console.log('An error occurred: ', error)
             }
@@ -171,23 +184,37 @@
                 this.$router.push({ name: 'Home' });
             },
             async addUser() {
+                this.invalidInput = '';
+                let user = this.user;
                 try {
-                    let user = this.user;
-
-                    const formData = new URLSearchParams();
-                    formData.append('firstname', this.user.firstname.charAt(0).toUpperCase() + this.user.firstname.slice(1));
-                    formData.append('lastname', this.user.lastname.charAt(0).toUpperCase() + this.user.lastname.slice(1));
-                    formData.append('email', this.user.email);
-                    formData.append('password', this.user.password);
-                    formData.append('number', BigInt(0));
-
-
-                    const response = await axios.post('users/add', formData);
-
-                    if (response.status === 200 && response.data) {
-                        console.log(response.data);
+                    if(user.firstname == null ||user.firstname == '' ||
+                       user.lastname == null || user.lastname == '' ||
+                       user.email == null || user.email == '' ||
+                       this.selectedRoles.length == 0 || 
+                       this.password == null || this.password == '' || 
+                       this.confirmpassword == null || this.confirmpassword == '') {
+                        this.invalidInput = 'Please fill out all required fields.';
+                    } else if(!(/^[a-z.-]+@[a-z.-]+\.[a-z]+$/i.test(user.email))) {
+                        this.invalidInput = 'Invalid e-mail.'
+                    } else if(this.password != this.confirmpassword) {
+                        this.invalidInput = 'Password mismatch.';
                     } else {
-                        console.error('Error adding user');
+                        const formData = new URLSearchParams();
+                        formData.append('firstname', user.firstname.charAt(0).toUpperCase() + user.firstname.slice(1));
+                        formData.append('lastname', user.lastname.charAt(0).toUpperCase() + user.lastname.slice(1));
+                        formData.append('email', user.email);
+                        formData.append('password', this.password);
+                        formData.append('number', BigInt(0));
+                        if(!(this.dob.year == 'Year' || this.dob.date == 'Day' || this.dob.month == 'Month')) 
+                            formData.append('birthdate', new Date(this.dob.year, this.months.indexOf(this.dob.month), this.dob.day));
+
+                        const response = await axios.post('users/add', formData);
+
+                        if (response.status === 200 && response.data) {
+                            this.$router.push({name: 'Home'});
+                        } else {
+                            console.error('Error adding user');
+                        }
                     }
                 } catch (error) {
                     console.error('An error occurred:', error);
@@ -259,6 +286,12 @@
         padding-inline: 10px;
         padding-top: 5px;
         display: block;
+    }
+
+    .error-message {
+        color: red;
+        font-size: 12px;
+        margin-top: 5px;
     }
 </style>
 

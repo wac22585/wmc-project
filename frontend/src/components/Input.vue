@@ -1,7 +1,7 @@
 <template>
     <div class="input-container">
       <div class="input-with-icon">
-        <input :type="inputType === 'password' && showPassword ? 'text' : inputType" 
+        <input :type="inputType === 'secure' || (inputType === 'password' && !showPassword) ? 'password' : 'text'" 
         class="input-form"
         :value="modelValue"
         @input="$emit('update:modelValue', $event.target.value)"
