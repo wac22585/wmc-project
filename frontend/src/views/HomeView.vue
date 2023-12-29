@@ -25,7 +25,16 @@
               <span>{{ user.email }}</span>
             </td>
             <td>{{ new Date(user.created).toLocaleDateString("de-DE") }}</td>
-            <td>{{ user.roles }}</td>
+            <td>
+              <div v-if="user.roles && user.roles.length > 0">
+                <v-chip v-if="user.roles[0]">
+                  {{ user.roles[0] }}
+                </v-chip>
+                <span v-if="user.roles.length > 1" class="text-grey text-caption">
+                  (+{{ user.roles.length - 1 }} others)
+                </span>
+              </div>
+            </td>
             <td>
               <v-dialog v-model="dialogs[index].showOuterDialog" width="275">
                 <template v-slot:activator="{ on, attrs }">
@@ -41,7 +50,6 @@
                   </v-card-text>
                 </v-card>
               </v-dialog>
-              <!-- Inner Dialog -->
               <v-dialog v-model="dialogs[index].showInnerDialog" width="275">
                 <v-card class="popup-window">
                   <v-card-text>
@@ -87,6 +95,13 @@ export default {
     try {
       const response = await axios.get('users/all');
       this.users = response.data;
+      this.users.forEach(user => {
+          if (user.roles && user.roles.length > 0) {
+            user.roles = user.roles.map(role => 
+                role.charAt(0).toUpperCase() + role.slice(1).toLowerCase()
+              );
+          }
+      });
       this.dialogs = this.users.map(() => ({ showOuterDialog: false, showInnerDialog: false }));
     } catch (e) {
       alert(e);

@@ -40,6 +40,8 @@
                         <label for="">Roles*</label>
                         <v-select
                             :items="roles"
+                            item-title="name"
+                            item-value="id"
                             v-model="selectedRoles"
                             bg-color="none"
                             density="compact"
@@ -173,7 +175,7 @@ import { setTransitionHooks } from 'vue';
                     let name = r.name.charAt(0) + r.name.slice(1).toLowerCase()
                     name = name.replace("_w", " W");
                     const role = {id: r.id, name: name};
-                    this.roles.push(name);
+                    this.roles.push(role);
                 }
             } catch (error) {
                 console.log('An error occurred: ', error)
@@ -185,6 +187,7 @@ import { setTransitionHooks } from 'vue';
             },
             async addUser() {
                 this.invalidInput = '';
+                console.log(this.selectedRoles)
                 let user = this.user;
                 try {
                     if(user.firstname == null ||user.firstname == '' ||
@@ -207,6 +210,7 @@ import { setTransitionHooks } from 'vue';
                         formData.append('number', BigInt(0));
                         if(!(this.dob.year == 'Year' || this.dob.date == 'Day' || this.dob.month == 'Month')) 
                             formData.append('birthdate', new Date(this.dob.year, this.months.indexOf(this.dob.month), this.dob.day));
+                        formData.append('roles', this.selectedRoles);
 
                         const response = await axios.post('users/add', formData);
 
