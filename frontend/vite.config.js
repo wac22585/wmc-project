@@ -50,9 +50,5 @@ export default defineConfig({
   build: {
     outDir: '../backend/src/main/resources/static',
     publicDir: 'static',
-  },
-  buildStart: () => {
-    // Delete the assets folder before the build starts
-    rimraf.sync('../backend/src/main/resources/static/assets');
   }
 });

@@ -1,6 +1,10 @@
 <template>
     <div class="btn-div">
-        <v-btn :type="type" class="submit-btn">{{ label }}</v-btn>
+        <v-btn 
+            :type="type" 
+            :density="density"
+            :class="buttonClasses"
+        >{{ label }}</v-btn>
     </div>
 </template>
 
@@ -16,6 +20,22 @@ export default {
             type: String,
             default: 'Continue'
         },
+        density: {
+            type: String,
+            default: 'default'
+        },
+        useWhiteBackground: {
+            type: Boolean,
+            default: false
+        }
+    },
+    computed: {
+        buttonClasses() {
+            return {
+                'bg-white': this.useWhiteBackground,
+                'submit-btn': true,
+            }
+        }
     }
 };
 </script>
@@ -26,5 +46,12 @@ export default {
         background: black;
         border-radius: 20px;
         font-size: 10px;
+    }
+
+    .bg-white {
+        background: white;
+        color: black;
+        border: 1px solid #707070;
+        margin-right: 30px;
     }
 </style>

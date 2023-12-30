@@ -36,28 +36,47 @@
               </div>
             </td>
             <td>
-              <v-dialog v-model="dialogs[index].showOuterDialog" width="275">
-                <template v-slot:activator="{ on, attrs }">
-                  <button class="btn-more" v-on="on" v-bind="attrs"><svg-icon type="mdi" :path="path"></svg-icon></button>
+              <v-menu
+                v-model="dialogs[index].showOuterDialog"
+                :close-on-content-click="false"
+                location="end"
+              >
+                <template v-slot:activator="{ props} ">
+                  <button 
+                    class="btn-more" 
+                    @click="openOutderDialog(index)" 
+                    v-bind="props">
+                      <svg-icon type="mdi" :path="path"></svg-icon>
+                  </button>
                 </template>
-                <v-card class="popup-window">
-                  <v-card-title>
-                    {{ user.firstname }} {{ user.lastname }}
-                  </v-card-title>
-                  <v-card-text class="text-center">
-                    <v-btn elevation="0" class="action-btn" @click="remove(user.id)">Update</v-btn>
-                    <v-btn elevation="0" class="action-btn delete-btn" @click="openInnerDialog(index)">Delete</v-btn>
-                  </v-card-text>
+
+                <v-card>
+                  <v-btn variant="text" prepend-icon="mdi-pencil" block class="align-start">
+                      Edit user
+                  </v-btn>
+                  <v-divider></v-divider>
+                    <v-btn variant="text" prepend-icon="mdi-delete" block @click="openInnerDialog(index)">
+                      Delete user
+                    </v-btn>
                 </v-card>
-              </v-dialog>
-              <v-dialog v-model="dialogs[index].showInnerDialog" width="275">
-                <v-card class="popup-window">
+              </v-menu>
+              <v-dialog v-model="dialogs[index].showInnerDialog" width="300">
+                <v-card class="popup-window text-center">
+                  <v-card-title>
+                    Are you sure?
+                  </v-card-title>
                   <v-card-text>
-                    Confirm delete user: {{ user.firstname }} {{ user.lastname }}?
+                    This will not permanently delete the user!
                   </v-card-text>
-                  <v-card-actions>
-                    <v-btn text @click="deleteUser(user.id, index)">Confirm</v-btn>
-                    <v-btn text @click="closeInnerDialog(index)">Cancel</v-btn>
+                  <v-card-actions class="confirm-action">
+                    <Btn label="Cancel" 
+                    @click="closeInnerDialog(index)"  
+                    density="comfortable"
+                    useWhiteBackground="true"/>
+                    <Btn label="Delete" 
+                    @click="deleteUser(user.id, index)" 
+                    density="comfortable"
+                    />
                   </v-card-actions>
                 </v-card>
               </v-dialog>
@@ -73,6 +92,7 @@
 import axios from 'axios';
 import InputField from '@/components/Input.vue';
 import Button from '@/components/Button-Settings.vue';
+import Btn from '@/components/Button.vue';
 import SvgIcon from '@jamescoyle/vue-icon';
 import { mdiDotsHorizontal } from '@mdi/js';
 </script>
@@ -83,6 +103,7 @@ export default {
     SvgIcon,
     InputField,
     Button,
+    Btn,
   },
   data() {
     return {
@@ -103,6 +124,7 @@ export default {
           }
       });
       this.dialogs = this.users.map(() => ({ showOuterDialog: false, showInnerDialog: false }));
+      console.log(this.dialogs)
     } catch (e) {
       alert(e);
     }
@@ -128,7 +150,11 @@ export default {
         alert(e);
       }
     },
+    openOutderDialog(index) {
+      this.dialogs[index].showOuterDialog = true;
+    },
     openInnerDialog(index) {
+      this.dialogs[index].showOuterDialog = false;
       this.dialogs[index].showInnerDialog = true;
     },
     closeInnerDialog(index) {
@@ -187,5 +213,15 @@ export default {
 
   .popup-window {
     border-radius: 20px !important;
+    border: solid 1px #707070;
+  }
+
+  .align-start {
+    justify-content: flex-start;
+    padding-top: 8px;
+  }
+
+  .confirm-action {
+    justify-content: center;
   }
 </style>
