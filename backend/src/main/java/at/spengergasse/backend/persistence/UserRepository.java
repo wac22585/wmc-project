@@ -11,4 +11,5 @@ public interface UserRepository extends Repository<User, Long>
     User findById(Long id);
     User findByEmail(String email);
     List<User> findAll();
+    User findByAuthToken(String authToken);
 }

@@ -67,6 +67,17 @@ public class UserController
 
        return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/validateToken")
+    public ResponseEntity<?> validateToken(@RequestParam("authToken") String authToken) {
+        User user = userRepository.findByAuthToken(authToken);
+        if(user != null) {
+            return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+    }
+
     @PostMapping("/add")
     public ResponseEntity<?> createUser(@RequestParam("firstname") String firstname,
                                         @RequestParam("lastname") String lastname,
