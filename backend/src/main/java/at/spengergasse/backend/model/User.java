@@ -1,7 +1,6 @@
 package at.spengergasse.backend.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.jpa.domain.AbstractPersistable;
@@ -52,5 +51,9 @@ public class User extends AbstractPersistable<Long>
     {
         return this.roles.stream()
                 .map(userRole -> userRole.getRole().getName().toString()).collect(Collectors.toList());
+    }
+
+    public void setIsDeleted(boolean isDeleted) {
+        this.isDeleted = isDeleted;
     }
 }

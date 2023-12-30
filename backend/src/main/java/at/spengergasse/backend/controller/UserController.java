@@ -8,16 +8,12 @@ import at.spengergasse.backend.model.UserRoleId;
 import at.spengergasse.backend.persistence.RoleRepository;
 import at.spengergasse.backend.persistence.UserRepository;
 import at.spengergasse.backend.persistence.UserRoleRepository;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.lang.reflect.Type;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -126,7 +122,8 @@ public class UserController
         {
             try
             {
-                user.setDeleted(true);
+                user.setIsDeleted(true);
+                user.setDeleted(LocalDateTime.now());
                 userRepository.save(user);
                 return new ResponseEntity("OK", HttpStatusCode.valueOf(200));
             } catch (Exception e)
