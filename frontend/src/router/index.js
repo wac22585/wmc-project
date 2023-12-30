@@ -1,5 +1,19 @@
-// Composables
 import { createRouter, createWebHistory } from 'vue-router'
+import axios from 'axios';
+
+const isAuthenticated = async  () => {
+  try {
+    const token = localStorage.getItem('autoToken');
+    const response = await axios.get("/users/validateToken", {
+      params: {
+        authToken: token
+      }
+    });
+    return response.status === 200;
+  } catch (error) {
+    return false;
+  }
+}
 
 const routes = [
   {
@@ -14,26 +28,28 @@ const routes = [
     meta: {
       requiresAuth: true,
     },
-    beforeEnter: (to, from, next) => {
-      const isAuthenticated = true;
-      if (isAuthenticated) {
-        next();
-      } else {
-        next({ name: 'Login' });
-      }
-    },
   },
   {
     path: '/add',
     name: 'Add',
     component: () => import('@/views/AddView.vue'),
+    meta: {
+      requiresAuth: true,
+    }
   }
 ];
-
 
 const router = createRouter({
   history: createWebHistory(process.env.BASE_URL),
   routes,
+})
+
+router.beforeEach((to, from, next) => {
+  if(to.matched.some(record => record.meta.requiresAuth) && !isAuthenticated) {
+    next({name: 'Login'});
+  } else {
+    next();
+  }
 })
 
 export default router
