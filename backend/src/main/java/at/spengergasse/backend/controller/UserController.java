@@ -73,7 +73,8 @@ public class UserController
         User u = userRepository.findByAuthToken(authToken);
         if(u == null) return ResponseEntity.notFound().build();
         u.setAuthToken(null);
-        return ResponseEntity.ok().build();
+        userRepository.save(u);
+        return ResponseEntity.ok("Logout successfull");
     }
 
     @GetMapping("/validateToken")
