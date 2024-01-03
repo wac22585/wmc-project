@@ -7,7 +7,7 @@
             <div class="title">New User</div>
             <div class="subtitle">Create a new User</div>
             <v-form @submit-prevent="addUser">
-                <v-row>
+                <v-row justify-md="strech">
                     <v-col>
                         <label for="">Firstname*</label>
                         <InputField class="inputfield" required
@@ -16,7 +16,7 @@
                     </v-col>
                     <v-col>
                         <label for="">Lastname*</label>
-                        <InputField
+                        <InputField class="inputfield"
                         :model-value="user.lastname" required
                         @update:model-value="newValue => user.lastname = newValue" inputType="text" />
                     </v-col>
@@ -31,7 +31,15 @@
                     </v-col>
                     <v-col>
                         <label for="">Phone-Number</label>
-                        <InputField></InputField>
+                        <v-select
+                            :items="countries"
+                            item-title="text"
+                            item-value="dialCode"
+                            v-model="dial_code"
+                        >
+
+                        </v-select>
+                        <InputField class="inputfield"></InputField>
                     </v-col>
                 </v-row>
 
@@ -63,53 +71,20 @@
                         </v-select>
                     </v-col>
                     <v-col>
-                        <label for="">Date of Birth</label>
-                        <v-row justify="start">
-                            <v-col>
-                                <v-select
-                                    :items="months"
-                                    v-model="dob.month"
-                                    bg-color="none"   
-                                    density="compact"
-                                    variant="plain"
-                                    class="select_date"
-                                ></v-select>
-                            </v-col>
-                            <v-col>
-                                <v-select
-                                :items="days"
-                                v-model="dob.day"
-                                bg-color="none"
-                                density="compact"
-                                variant="plain"
-                                class="select_date year"
-                                ></v-select>
-                            </v-col>
-                            <v-col>
-                                <v-select
-                                :items="years"
-                                v-model="dob.year"
-                                bg-color="none"
-                                density="compact"
-                                variant="plain"
-                                class="select_date year"
-                                ></v-select>
-                            </v-col>
-                        </v-row>
+                       <DatePicker />
                     </v-col>
                 </v-row>
-
                 <v-row>
                     <v-col>
                         <label for="">Password*</label>
                         <InputField class="inputfield" 
-                            width="400px" required
+                            required
                             :model-value="password" 
                             @update:model-value="newValue => password = newValue" inputType="secure"/>
                     </v-col>
                     <v-col>
                         <label for="">Confirm Password*</label>
-                        <InputField 
+                        <InputField class="inputfield"
                             :model-value="confirmpassword" required
                             @update:model-value="newValue => confirmpassword = newValue" inputType="secure"/>
                     </v-col>
@@ -130,11 +105,17 @@
 <script>
     import InputField from '@/components/Input.vue';
     import Btn from '@/components/Button.vue';
+    import DatePicker from '@/components/DatePicker.vue';
     import axios from 'axios';
     import LoginView from './LoginView.vue';
 import { setTransitionHooks } from 'vue';
 
     export default {
+        components: {
+            InputField,
+            DatePicker,
+            Btn,
+        },
         data() {
             return {
                 user: {},
@@ -143,33 +124,13 @@ import { setTransitionHooks } from 'vue';
                 invalidInput: '',
                 roles: [],
                 selectedRoles: [],
-                dob: {
-                    month: 'Month',
-                    day: 'Day',
-                    year: 'Year'
-                },
-                months: [
-                    'January', 'February', 'March', 'April', 'May', 'June',
-                    'July', 'August', 'September', 'October', 'November', 'December'
-                ],
-                years: (() => {
-                    const currentYear = new Date().getFullYear();
-                    const years = [];
-                    for (let i = currentYear; i >= currentYear - 100; i--) {
-                    years.push(i);
-                    }
-                    return years;
-                })(),
-                days: Array.from({ length: 31 }, (_, i) => i + 1),
+                countries: [],
+                dial_code: 0,
             }
-        },
-        components: {
-            InputField,
-            Btn,
         },
         async mounted() {
             try {
-                const response = await axios.get('roles/all');
+                const response = await axios.get('/roles/all');
                 for(const r of response.data) 
                 {
                     let name = r.name.charAt(0) + r.name.slice(1).toLowerCase()
@@ -177,6 +138,18 @@ import { setTransitionHooks } from 'vue';
                     const role = {id: r.id, name: name};
                     this.roles.push(role);
                 }
+            } catch (error) {
+                console.log('An error occurred: ', error)
+            }
+
+            try {
+                const response = await axios.get('/countries/all');
+                this.countries = response.data;
+                for(const c of this.countries) {
+                    let text = '+' + c.dialCode + ' (' + c.countrycode + ')';
+                    c.text = text;
+                }
+                console.log(this.countries);
             } catch (error) {
                 console.log('An error occurred: ', error)
             }
@@ -190,11 +163,8 @@ import { setTransitionHooks } from 'vue';
                 console.log(this.selectedRoles)
                 let user = this.user;
                 try {
-                    if(user.firstname == null ||user.firstname == '' ||
-                       user.lastname == null || user.lastname == '' ||
-                       user.email == null || user.email == '' ||
-                       this.selectedRoles.length == 0 || 
-                       this.password == null || this.password == '' || 
+                    if(user.firstname == null ||user.firstname == '' || user.lastname == null || user.lastname == '' ||
+                       user.email == null || user.email == '' || this.selectedRoles.length == 0 || this.password == null || this.password == '' || 
                        this.confirmpassword == null || this.confirmpassword == '') {
                         this.invalidInput = 'Please fill out all required fields.';
                     } else if(!(/^[a-z.-]+@[a-z.-]+\.[a-z]+$/i.test(user.email))) {
@@ -208,8 +178,8 @@ import { setTransitionHooks } from 'vue';
                         formData.append('email', user.email);
                         formData.append('password', this.password);
                         formData.append('number', BigInt(0));
-                        if(!(this.dob.year == 'Year' || this.dob.date == 'Day' || this.dob.month == 'Month')) 
-                            formData.append('birthdate', new Date(this.dob.year, this.months.indexOf(this.dob.month), this.dob.day));
+                        if(this.dob != new Date()) 
+                            formData.append('birthdate', this.dob);
                         formData.append('roles', this.selectedRoles);
 
                         const response = await axios.post('users/add', formData);
@@ -232,6 +202,8 @@ import { setTransitionHooks } from 'vue';
     .inner {
        display: inline-block;
        margin: auto;
+       width: 925px;
+       min-width: 300px;
     }
 
     .outer{
@@ -252,40 +224,17 @@ import { setTransitionHooks } from 'vue';
         margin-bottom: 40px;
     }
 
-    .col-end {
-        margin-left: auto;
-    }
-
     .btn-div {
         display: flex;
         justify-content: end;
-    }
-
-    .inputfield {
-        margin-right: 20px;
-    }
-
-    .select_date {
-        border: solid 1px #707070;
-        border-radius: 7px;
-        margin-top: 10px;
-        height: 50px;
-        padding-inline: 10px;
-        width: 150px;
-        padding-top: 5px;
-    }
-
-    .year {
-        width: 100px;
     }
 
     .select {
         border: #707070 1px solid;
         background: white !important;
         height: 50px;
-        width: 400px;
         margin: 10px 0px;
-        margin-right: 20px;
+        min-width: 300px;
         border-radius: 7px;
         padding-inline: 10px;
         padding-top: 5px;

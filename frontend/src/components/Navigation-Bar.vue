@@ -10,12 +10,12 @@
         </v-list-item>
         <v-list-item  class="nav-item">
           <router-link class="router-link" v-bind:to="`/account`">
-            <v-btn prepend-icon="mdi-cog" :ripple="false" variant="text" size="large">ACCOUNT</v-btn>
+            <v-btn prepend-icon="mdi-cog" :ripple="false" variant="text" size="large"><span class="font-weight-bold">ACCOUNT</span></v-btn>
           </router-link>
         </v-list-item>
         <v-list-item class="nav-item">
           <router-link class="router-link" v-bind:to="`/add`">
-            <v-btn prepend-icon="mdi-plus" :ripple="false" variant="text" size="large">ADD USER</v-btn>
+            <v-btn prepend-icon="mdi-plus" :ripple="false" variant="text" size="large"><span class="font-weight-bold">ADD USER</span></v-btn>
           </router-link>
         </v-list-item>
         <v-list-item class="logout">
@@ -30,8 +30,8 @@
         data() {
             return {
                 drawer: true,
-      isSmallScreen: false,
-      marginWidth: '70px',
+                isSmallScreen: false,
+                marginWidth: '70px',
             }
         },
         mounted() {

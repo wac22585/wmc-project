@@ -7,6 +7,7 @@
         @input="$emit('update:modelValue', $event.target.value)"
         :style="{width: width}"
         :placeholder="label"
+        :readonly="readonly"
         >
         <div v-if="search" class="search-icon">
           <v-icon>mdi-magnify</v-icon>
@@ -23,7 +24,7 @@
   <script setup>
   import { computed } from 'vue'
 
-  const props = defineProps(['modelValue', 'inputType', 'width', 'label', 'search'])
+  const props = defineProps(['modelValue', 'inputType', 'width', 'label', 'search', 'readonly'])
   const emit = defineEmits(['update:modelValue'])
 
   const value = computed({
@@ -72,8 +73,9 @@
   .input-form {
     border: #707070 1px solid;
     height: 50px;
-    width: 400px;
     margin: 10px 0px;
+    width: 100%;
+    min-width: 300px;
     border-radius: 7px;
     padding-inline: 10px;
     transition: border-color 0.3s;

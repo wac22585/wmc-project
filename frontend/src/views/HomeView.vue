@@ -115,9 +115,6 @@ export default {
       users: [],
       dialogs: [],
       path: mdiDotsHorizontal,
-      drawer: true,
-      isSmallScreen: false,
-      marginWidth: '70px',
     };
   },
   async mounted() {
