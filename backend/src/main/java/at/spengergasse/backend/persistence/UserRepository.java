@@ -4,11 +4,12 @@ import at.spengergasse.backend.model.User;
 import org.springframework.data.repository.Repository;
 
 import java.util.List;
+import java.util.UUID;
 
-public interface UserRepository extends Repository<User, Long>
+public interface UserRepository extends Repository<User, UUID>
 {
     void save(User user);
-    User findById(Long id);
+    User findById(UUID id);
     User findByEmail(String email);
     List<User> findAll();
     User findByAuthToken(String authToken);

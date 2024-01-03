@@ -68,6 +68,14 @@ public class UserController
        return ResponseEntity.ok(response);
     }
 
+    @PutMapping("/logout")
+    public ResponseEntity<?> logout(@RequestParam("authToken") String authToken) {
+        User u = userRepository.findByAuthToken(authToken);
+        if(u == null) return ResponseEntity.notFound().build();
+        u.setAuthToken(null);
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping("/validateToken")
     public ResponseEntity<?> validateToken(@RequestParam("authToken") String authToken) {
         User user = userRepository.findByAuthToken(authToken);
@@ -126,7 +134,7 @@ public class UserController
 
 
     @PutMapping("delete/{id}")
-    public @ResponseStatus ResponseEntity delete(@PathVariable final Long id)
+    public @ResponseStatus ResponseEntity delete(@PathVariable final UUID id)
     {
         User user = userRepository.findById(id);
         if(user != null)

@@ -3,6 +3,7 @@ package at.spengergasse.backend.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.UuidGenerator;
 import org.springframework.data.jpa.domain.AbstractPersistable;
 
 import org.mindrot.jbcrypt.BCrypt;
@@ -10,6 +11,7 @@ import org.mindrot.jbcrypt.BCrypt;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Entity
@@ -20,8 +22,11 @@ import java.util.stream.Collectors;
 @AllArgsConstructor(access = AccessLevel.PUBLIC)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "users")
-public class User extends AbstractPersistable<Long>
+public class User
 {
+    @Id
+    @UuidGenerator
+    private UUID id;
     private String firstname;
     private String lastname;
     private String email;
