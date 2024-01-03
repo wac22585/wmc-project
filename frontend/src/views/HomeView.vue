@@ -1,26 +1,6 @@
 <template>
   <v-layout>
-    <v-navigation-drawer width="200" class="navigation">
-      <v-list-item class="nav-item">
-        <router-link class="router-link" v-bind:to="`/home`">
-          <v-btn prepend-icon="mdi-account-multiple" :ripple="false" variant="text" size="large"><span class="font-weight-bold">USERS</span></v-btn>
-        </router-link>
-      </v-list-item>
-      <v-list-item  class="nav-item">
-        <router-link class="router-link" v-bind:to="`/account`">
-          <v-btn prepend-icon="mdi-cog" :ripple="false" variant="text" size="large">ACCOUNT</v-btn>
-        </router-link>
-      </v-list-item>
-      <v-list-item class="nav-item">
-        <router-link class="router-link" v-bind:to="`/add`">
-          <v-btn prepend-icon="mdi-plus" :ripple="false" variant="text" size="large">ADD USER</v-btn>
-        </router-link>
-      </v-list-item>
-      <v-list-item class="logout">
-        <v-btn prepend-icon="mdi-logout" :ripple="false" variant="text" size="large" @click="logout()">Log out</v-btn>
-      </v-list-item>
-    </v-navigation-drawer>
-
+    <NavBar />
     <v-main class="main">
       <div class="title">Users</div>
       <div class="subtitle">view and manage users</div>
@@ -116,6 +96,7 @@ import axios from 'axios';
 import InputField from '@/components/Input.vue';
 import Button from '@/components/Button-Settings.vue';
 import Btn from '@/components/Button.vue';
+import NavBar from '@/components/Navigation-Bar.vue';
 import SvgIcon from '@jamescoyle/vue-icon';
 import { mdiDotsHorizontal } from '@mdi/js';
 </script>
@@ -127,15 +108,21 @@ export default {
     InputField,
     Button,
     Btn,
+    NavBar,
   },
   data() {
     return {
       users: [],
       dialogs: [],
       path: mdiDotsHorizontal,
+      drawer: true,
+      isSmallScreen: false,
+      marginWidth: '70px',
     };
   },
   async mounted() {
+    this.checkScreenSize();
+    window.addEventListener('resize', this.checkScreenSize)
     try {
       const response = await axios.get('users/all');
       this.users = response.data;
@@ -151,6 +138,9 @@ export default {
     } catch (e) {
       alert(e);
     }
+  },
+  beforeDestroy() {
+    window.removeEventListener('resize', this.checkScreenSize);
   },
   methods: {
     add() {
@@ -186,12 +176,12 @@ export default {
     async logout() {
       try {
         const token = localStorage.getItem('authToken');
-        const response = await axios.put('users/logout', {
+        const response = await axios.put('/users/logout', null, {
           params: {
             authToken: token
           }
         });
-        if(response.data === 'OK') {
+        if(response.data) {
           localStorage.removeItem('authToken');
           this.$router.push({name: 'Login'});
         } else {
@@ -200,28 +190,21 @@ export default {
       } catch(error) {
         alert(error);
       }
-      
-    }
+    },
+    toggleDrawer() {
+      this.drawer = !this.drawer;
+    },
+    checkScreenSize() {
+      this.isSmallScreen = window.innerWidth < 1280;
+      this.marginWidth = this.isSmallScreen ? '0px' : '70px';
+    },
   },
 };
 </script>
 
 <style scoped>
-  .navigation {
-    padding-top: 70px;
-  }
-
-  .nav-item {
-    margin-block: 10px;
-  }
-
-  .logout {
-    position: fixed !important;
-    bottom: 40px !important;
-  }
-
   .main {
-    margin: 70px;
+    margin-top: 70px;
   }
   .title {
     color: black;
