@@ -1,91 +1,114 @@
 <template>
-  <v-container>
-    <div class="title">Users</div>
-    <div class="subtitle">view and manage users</div>
-    <div class="add-btns">
-      <InputField width="700px" label="Search" class="inputfield"></InputField>
-      <v-divider vertical class="mx-2"></v-divider>
-      <Button content="Filter" />
-      <Button content="Add" @click="add" />
-    </div>
-    <div>
-      <v-table>
-        <thead>
-          <tr>
-            <th class="text-left table-head">User</th>
-            <th class="table-head">Created</th>
-            <th class="text-left table-head">Role</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(user, index) in users" :key="user.id">
-            <td>
-              <span class="username">{{ user.firstname }} {{ user.lastname }}</span><br>
-              <span>{{ user.email }}</span>
-            </td>
-            <td>{{ new Date(user.created).toLocaleDateString("de-DE") }}</td>
-            <td>
-              <div v-if="user.roles && user.roles.length > 0">
-                <v-chip v-if="user.roles[0]">
-                  {{ user.roles[0] }}
-                </v-chip>
-                <span v-if="user.roles.length > 1" class="text-grey text-caption">
-                  (+{{ user.roles.length - 1 }} others)
-                </span>
-              </div>
-            </td>
-            <td>
-              <v-menu
-                v-model="dialogs[index].showOuterDialog"
-                :close-on-content-click="false"
-                location="end"
-              >
-                <template v-slot:activator="{ props} ">
-                  <button 
-                    class="btn-more" 
-                    @click="openOutderDialog(index)" 
-                    v-bind="props">
-                      <svg-icon type="mdi" :path="path"></svg-icon>
-                  </button>
-                </template>
+  <v-layout>
+    <v-navigation-drawer width="200" class="navigation">
+      <v-list-item class="nav-item">
+        <router-link class="router-link" v-bind:to="`/home`">
+          <v-btn prepend-icon="mdi-account-multiple" :ripple="false" variant="text" size="large"><span class="font-weight-bold">USERS</span></v-btn>
+        </router-link>
+      </v-list-item>
+      <v-list-item  class="nav-item">
+        <router-link class="router-link" v-bind:to="`/account`">
+          <v-btn prepend-icon="mdi-cog" :ripple="false" variant="text" size="large">ACCOUNT</v-btn>
+        </router-link>
+      </v-list-item>
+      <v-list-item class="nav-item">
+        <router-link class="router-link" v-bind:to="`/add`">
+          <v-btn prepend-icon="mdi-plus" :ripple="false" variant="text" size="large">ADD USER</v-btn>
+        </router-link>
+      </v-list-item>
+      <v-list-item class="logout">
+        <v-btn prepend-icon="mdi-logout" :ripple="false" variant="text" size="large" @click="logout()">Log out</v-btn>
+      </v-list-item>
+    </v-navigation-drawer>
 
-                <v-card>
-                  <v-btn variant="text" prepend-icon="mdi-pencil" block class="align-start">
-                      Edit user
-                  </v-btn>
-                  <v-divider></v-divider>
-                    <v-btn variant="text" prepend-icon="mdi-delete" block @click="openInnerDialog(index)">
-                      Delete user
-                    </v-btn>
-                </v-card>
-              </v-menu>
-              <v-dialog v-model="dialogs[index].showInnerDialog" width="300">
-                <v-card class="popup-window text-center">
-                  <v-card-title>
-                    Are you sure?
-                  </v-card-title>
-                  <v-card-text>
-                    This will not permanently delete the user!
-                  </v-card-text>
-                  <v-card-actions class="confirm-action">
-                    <Btn label="Cancel" 
-                    @click="closeInnerDialog(index)"  
-                    density="comfortable"
-                    useWhiteBackground="true"/>
-                    <Btn label="Delete" 
-                    @click="deleteUser(user.id, index)" 
-                    density="comfortable"
-                    />
-                  </v-card-actions>
-                </v-card>
-              </v-dialog>
-            </td>
-          </tr>
-        </tbody>
-      </v-table>
-    </div>
-  </v-container>
+    <v-main class="main">
+      <div class="title">Users</div>
+      <div class="subtitle">view and manage users</div>
+      <div class="add-btns">
+        <InputField width="700px" label="Search" class="inputfield"></InputField>
+        <v-divider vertical class="mx-2"></v-divider>
+        <Button content="Filter" />
+        <Button content="Add" @click="add" />
+      </div>
+      <div>
+        <v-table>
+          <thead>
+            <tr>
+              <th class="text-left table-head">User</th>
+              <th class="table-head">Created</th>
+              <th class="text-left table-head">Role</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(user, index) in users" :key="user.id">
+              <td>
+                <span class="username">{{ user.firstname }} {{ user.lastname }}</span><br>
+                <span>{{ user.email }}</span>
+              </td>
+              <td>{{ new Date(user.created).toLocaleDateString("de-DE") }}</td>
+              <td>
+                <div v-if="user.roles && user.roles.length > 0">
+                  <v-chip v-if="user.roles[0]">
+                    {{ user.roles[0] }}
+                  </v-chip>
+                  <span v-if="user.roles.length > 1" class="text-grey text-caption">
+                    (+{{ user.roles.length - 1 }} others)
+                  </span>
+                </div>
+              </td>
+              <td>
+                <v-menu
+                  v-model="dialogs[index].showOuterDialog"
+                  :close-on-content-click="false"
+                  location="end"
+                >
+                  <template v-slot:activator="{ props} ">
+                    <button 
+                      class="btn-more" 
+                      @click="openOutderDialog(index)" 
+                      v-bind="props">
+                        <svg-icon type="mdi" :path="path"></svg-icon>
+                    </button>
+                  </template>
+
+                  <v-card>
+                    <router-link class="router-link" v-bind:to="`/edit/${user.id}`">
+                      <v-btn variant="text" prepend-icon="mdi-pencil" block class="align-start">
+                        Edit user
+                      </v-btn>
+                    </router-link>
+                    <v-divider></v-divider>
+                      <v-btn variant="text" prepend-icon="mdi-delete" block @click="openInnerDialog(index)">
+                        Delete user
+                      </v-btn>
+                  </v-card>
+                </v-menu>
+                <v-dialog v-model="dialogs[index].showInnerDialog" width="300">
+                  <v-card class="popup-window text-center">
+                    <v-card-title>
+                      Are you sure?
+                    </v-card-title>
+                    <v-card-text>
+                      This will not permanently delete the user!
+                    </v-card-text>
+                    <v-card-actions class="confirm-action">
+                      <Btn label="Cancel" 
+                      @click="closeInnerDialog(index)"  
+                      useWhiteBackground="true"/>
+                      <Btn label="Delete" 
+                      @click="deleteUser(user.id, index)" 
+                      />
+                    </v-card-actions>
+                  </v-card>
+                </v-dialog>
+              </td>
+            </tr>
+          </tbody>
+        </v-table>
+      </div>
+    </v-main>
+  </v-layout>
 </template>
 
 <script setup>
@@ -160,11 +183,46 @@ export default {
     closeInnerDialog(index) {
       this.dialogs[index].showInnerDialog = false;
     },
+    async logout() {
+      try {
+        const token = localStorage.getItem('authToken');
+        const response = await axios.put('users/logout', {
+          params: {
+            authToken: token
+          }
+        });
+        if(response.data === 'OK') {
+          localStorage.removeItem('authToken');
+          this.$router.push({name: 'Login'});
+        } else {
+            console.error('Error deleting user:', response.data);
+        }
+      } catch(error) {
+        alert(error);
+      }
+      
+    }
   },
 };
 </script>
 
 <style scoped>
+  .navigation {
+    padding-top: 70px;
+  }
+
+  .nav-item {
+    margin-block: 10px;
+  }
+
+  .logout {
+    position: fixed !important;
+    bottom: 40px !important;
+  }
+
+  .main {
+    margin: 70px;
+  }
   .title {
     color: black;
     font-size: 30px;
@@ -218,10 +276,15 @@ export default {
 
   .align-start {
     justify-content: flex-start;
-    padding-top: 8px;
+    padding-top: 9px;
   }
 
   .confirm-action {
     justify-content: center;
+  }
+
+  .router-link {
+    text-decoration: none !important;
+    color: #212121;
   }
 </style>
