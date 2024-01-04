@@ -11,30 +11,33 @@
         <Button content="Add" @click="add" />
       </div>
       <div>
-        <v-table>
+        <v-data-table class="table" fixed-header :items="users" :items-per-page="10" v-model="users">
           <thead>
             <tr>
               <th class="text-left table-head">User</th>
-              <th class="table-head">Created</th>
+              <th v-if="!isSmallScreen" class="table-head">Created</th>
               <th class="text-left table-head">Role</th>
-              <th></th>
+              <th class="text-left"></th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="(user, index) in users" :key="user.id">
               <td>
-                <span class="username">{{ user.firstname }} {{ user.lastname }}</span><br>
-                <span>{{ user.email }}</span>
+                <span class="username collapsible-text" :class="{'collapsible-small-screen': colapse}">{{ user.firstname }} {{ user.lastname }}</span>
+                <span class="collapsible-text" :class="{'collapsible-small-screen': colapse}">{{ user.email }}</span>
               </td>
-              <td>{{ new Date(user.created).toLocaleDateString("de-DE") }}</td>
+              <td v-if="!isSmallScreen">{{ new Date(user.created).toLocaleDateString("de-DE") }}</td>
               <td>
-                <div v-if="user.roles && user.roles.length > 0">
+                <div v-if="!colapse && user.roles && user.roles.length > 0">
                   <v-chip v-if="user.roles[0]">
                     {{ user.roles[0] }}
                   </v-chip>
                   <span v-if="user.roles.length > 1" class="text-grey text-caption">
                     (+{{ user.roles.length - 1 }} others)
                   </span>
+                </div>
+                <div v-if="colapse && user.roles && user.roles.length > 0">
+                  <v-chip>{{ user.roles[0] }}<span v-if="user.roles.length > 1">, ...</span></v-chip>
                 </div>
               </td>
               <td>
@@ -85,7 +88,7 @@
               </td>
             </tr>
           </tbody>
-        </v-table>
+        </v-data-table>
       </div>
     </v-main>
   </v-layout>
@@ -115,6 +118,8 @@ export default {
       users: [],
       dialogs: [],
       path: mdiDotsHorizontal,
+      isSmallScreen: false,
+      colapse: false,
     };
   },
   async mounted() {
@@ -123,15 +128,14 @@ export default {
     try {
       const response = await axios.get('users/all');
       this.users = response.data;
-      this.users.forEach(user => {
-          if (user.roles && user.roles.length > 0) {
-            user.roles = user.roles.map(role => 
-                role.charAt(0).toUpperCase() + role.slice(1).toLowerCase()
-              );
-          }
+      this.users.forEach(u => {
+        if (u.roles && u.roles.length > 0) {
+          u.roles = u.roles.map(role => 
+              role.charAt(0).toUpperCase() + role.slice(1).toLowerCase()
+            );
+        }
       });
       this.dialogs = this.users.map(() => ({ showOuterDialog: false, showInnerDialog: false }));
-      console.log(this.dialogs)
     } catch (e) {
       alert(e);
     }
@@ -175,6 +179,7 @@ export default {
     },
     checkScreenSize() {
       this.isSmallScreen = window.innerWidth < 1280;
+      this.colapse = window.innerWidth < 600;
       this.marginWidth = this.isSmallScreen ? '0px' : '70px';
     },
   },
@@ -194,6 +199,10 @@ export default {
     color: black;
     font-size: 20px;
     margin-top: -10px;
+  }
+
+  .table {
+    padding-right: 70px;
   }
 
   .table-head {
@@ -248,5 +257,17 @@ export default {
   .router-link {
     text-decoration: none !important;
     color: #212121;
+  }
+
+  .collapsible-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+  }
+
+  .collapsible-small-screen {
+    max-width: 100px;
+    min-width: 50px;
   }
 </style>
