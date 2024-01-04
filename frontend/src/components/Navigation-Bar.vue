@@ -1,5 +1,6 @@
 <template>
     <v-btn class="toggle-btn" v-if="!drawer && isSmallScreen" @click="toggleDrawer" variant="plain" icon="mdi-menu" :ripple="false"/> 
+    <div v-if="isSmallScreen && drawer" :style="{'margin-right': '48px'}"></div>
     <div :style="{ 'margin-right': marginWidth }">
       <v-navigation-drawer width="200" v-model="drawer">
         <v-btn class="close-btn" v-if="isSmallScreen" @click="toggleDrawer" variant="plain" icon="mdi-close" :ripple="false" /> 
@@ -25,6 +26,10 @@
     </div>
 </template>
 
+<script setup>
+  import axios from 'axios';
+</script>
+
 <script>
     export default {
         data() {
@@ -37,18 +42,37 @@
         mounted() {
             this.checkScreenSize();
             window.addEventListener('resize', this.checkScreenSize)
+            if(this.isSmallScreen) this.drawer = false;
         },
         beforeDestroy() {
             window.removeEventListener('resize', this.checkScreenSize);
         },
         methods: {
-            toggleDrawer() {
-                this.drawer = !this.drawer;
-            },
-            checkScreenSize() {
-                this.isSmallScreen = window.innerWidth < 1280;
-                this.marginWidth = this.isSmallScreen ? '0px' : '70px';
-            },
+          toggleDrawer() {
+              this.drawer = !this.drawer;
+          },
+          checkScreenSize() {
+              this.isSmallScreen = window.innerWidth < 1280;
+              this.marginWidth = this.isSmallScreen ? '0px' : '70px';
+          },
+          async logout() {
+            try {
+              const token = localStorage.getItem('authToken');
+              const response = await axios.put('/users/logout', null, {
+                params: {
+                  authToken: token
+                }
+              });
+              if(response.data) {
+                localStorage.removeItem('authToken');
+                this.$router.push({name: 'Login'});
+              } else {
+                  console.error('Error deleting user:', response.data);
+              }
+            } catch(error) {
+              alert(error);
+            }
+          },
         }
     }
 </script>

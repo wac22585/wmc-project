@@ -170,24 +170,6 @@ export default {
     closeInnerDialog(index) {
       this.dialogs[index].showInnerDialog = false;
     },
-    async logout() {
-      try {
-        const token = localStorage.getItem('authToken');
-        const response = await axios.put('/users/logout', null, {
-          params: {
-            authToken: token
-          }
-        });
-        if(response.data) {
-          localStorage.removeItem('authToken');
-          this.$router.push({name: 'Login'});
-        } else {
-            console.error('Error deleting user:', response.data);
-        }
-      } catch(error) {
-        alert(error);
-      }
-    },
     toggleDrawer() {
       this.drawer = !this.drawer;
     },
