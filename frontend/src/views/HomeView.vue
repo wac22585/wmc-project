@@ -5,43 +5,52 @@
       <div class="title">Users</div>
       <div class="subtitle">view and manage users</div>
       <div class="add-btns">
-        <InputField width="700px" label="Search" class="inputfield"></InputField>
+        <InputField  label="Search" class="inputfield"></InputField>
         <v-divider vertical class="mx-2"></v-divider>
         <Button content="Filter" />
         <Button content="Add" @click="add" />
       </div>
       <div>
-        <v-data-table class="table" fixed-header :items="users" :items-per-page="10" v-model="users">
-          <thead>
+        <v-data-table
+          :headers="dynamicHeaders"
+          :items="users"
+          :items-per-page="10"
+          :class="{'table-width': colapse}"
+        >
+          <template v-slot:headers>
             <tr>
               <th class="text-left table-head">User</th>
-              <th v-if="!isSmallScreen" class="table-head">Created</th>
-              <th class="text-left table-head">Role</th>
-              <th class="text-left"></th>
+              <th v-if="!isSmallScreen" class="text-left table-head">Created</th>
+              <th class="text-left table-head">Roles</th>
+              <th class="text-left table-head"></th>
             </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(user, index) in users" :key="user.id">
-              <td>
-                <span class="username collapsible-text" :class="{'collapsible-small-screen': colapse}">{{ user.firstname }} {{ user.lastname }}</span>
-                <span class="collapsible-text" :class="{'collapsible-small-screen': colapse}">{{ user.email }}</span>
-              </td>
-              <td v-if="!isSmallScreen">{{ new Date(user.created).toLocaleDateString("de-DE") }}</td>
-              <td>
-                <div v-if="!colapse && user.roles && user.roles.length > 0">
-                  <v-chip v-if="user.roles[0]">
-                    {{ user.roles[0] }}
+          </template>
+
+          <template v-slot:item.fullname="{ item }">
+            <span class="username collapsible-text" :class="{'collapsible-small-screen': colapse}">{{ item.firstname }} {{ item.lastname }}</span>
+            <span class="collapsible-text" :class="{'collapsible-small-screen': colapse}">{{ item.email }}</span>
+          </template>
+
+          <template v-slot:item.created="{ item }">
+            {{ new Date(item.created).toLocaleDateString("de-DE") }}
+          </template>
+
+          <template v-slot:item.roles="{ item }">
+            <div v-if="!colapse && item.roles && item.roles.length > 0">
+                  <v-chip v-if="item.roles[0]">
+                    {{ item.roles[0] }}
                   </v-chip>
-                  <span v-if="user.roles.length > 1" class="text-grey text-caption">
-                    (+{{ user.roles.length - 1 }} others)
+                  <span v-if="item.roles.length > 1" class="text-grey text-caption">
+                    (+{{ item.roles.length - 1 }} other<span v-if="item.roles.length > 2">s</span>)
                   </span>
                 </div>
-                <div v-if="colapse && user.roles && user.roles.length > 0">
-                  <v-chip>{{ user.roles[0] }}<span v-if="user.roles.length > 1">, ...</span></v-chip>
+                <div v-if="colapse && item.roles && item.roles.length > 0">
+                  <v-chip>{{ item.roles[0] }}<span v-if="item.roles.length > 1">, ...</span></v-chip>
                 </div>
-              </td>
-              <td>
-                <v-menu
+          </template>
+
+          <template v-slot:item.actions="{ item, index }">
+            <v-menu
                   v-model="dialogs[index].showOuterDialog"
                   :close-on-content-click="false"
                   location="end"
@@ -56,7 +65,7 @@
                   </template>
 
                   <v-card>
-                    <router-link class="router-link" v-bind:to="`/edit/${user.id}`">
+                    <router-link class="router-link" v-bind:to="`/edit/${item.id}`">
                       <v-btn variant="text" prepend-icon="mdi-pencil" block class="align-start">
                         Edit user
                       </v-btn>
@@ -80,14 +89,12 @@
                       @click="closeInnerDialog(index)"  
                       useWhiteBackground="true"/>
                       <Btn label="Delete" 
-                      @click="deleteUser(user.id, index)" 
+                      @click="deleteUser(item.id, index)" 
                       />
                     </v-card-actions>
                   </v-card>
                 </v-dialog>
-              </td>
-            </tr>
-          </tbody>
+          </template>
         </v-data-table>
       </div>
     </v-main>
@@ -122,6 +129,17 @@ export default {
       colapse: false,
     };
   },
+  computed: {
+    dynamicHeaders() {
+      let headers = [
+        { text: 'User', value: 'fullname' },
+        ...(!this.isSmallScreen ? [{ text: 'Created', value: 'created' }] : []),
+        { text: 'Roles', value: 'roles' },
+        { text: '', value: 'actions', sortable: false, width: '30px' },
+      ];
+      return headers;
+    },
+  },
   async mounted() {
     this.checkScreenSize();
     window.addEventListener('resize', this.checkScreenSize)
@@ -136,6 +154,7 @@ export default {
         }
       });
       this.dialogs = this.users.map(() => ({ showOuterDialog: false, showInnerDialog: false }));
+      console.log(this.users)
     } catch (e) {
       alert(e);
     }
@@ -165,6 +184,7 @@ export default {
       }
     },
     openOutderDialog(index) {
+      console.log(this.dialogs)
       this.dialogs[index].showOuterDialog = true;
     },
     openInnerDialog(index) {
@@ -189,6 +209,7 @@ export default {
 <style scoped>
   .main {
     margin-top: 70px;
+    margin-right: 70px;
   }
   .title {
     color: black;
@@ -201,9 +222,6 @@ export default {
     margin-top: -10px;
   }
 
-  .table {
-    padding-right: 70px;
-  }
 
   .table-head {
     color: #707070;
@@ -267,7 +285,10 @@ export default {
   }
 
   .collapsible-small-screen {
-    max-width: 100px;
-    min-width: 50px;
+    max-width: 90px;
+  }
+
+  .table-width {
+    width: 85% !important;
   }
 </style>
