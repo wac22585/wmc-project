@@ -31,14 +31,6 @@
                     </v-col>
                     <v-col>
                         <label for="">Phone-Number</label>
-                        <v-select
-                            :items="countries"
-                            item-title="text"
-                            item-value="dialCode"
-                            v-model="dial_code"
-                        >
-
-                        </v-select>
                         <InputField class="inputfield"></InputField>
                     </v-col>
                 </v-row>

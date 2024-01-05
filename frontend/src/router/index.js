@@ -3,7 +3,8 @@ import axios from 'axios';
 
 const isAuthenticated = async  () => {
   try {
-    const token = localStorage.getItem('autoToken');
+    const token = localStorage.getItem('authToken');
+    if(token == null) return false;
     const response = await axios.get("/users/validateToken", {
       params: {
         authToken: token
@@ -52,6 +53,11 @@ const routes = [
     meta: {
       requiresAuth: true,
     }
+  },
+  {
+    path: '/:catchAll(.*)',
+    name: 'notFound',
+    component: () => import('@/views/LoginView.vue'),
   }
 ];
 
@@ -60,12 +66,19 @@ const router = createRouter({
   routes,
 })
 
-router.beforeEach((to, from, next) => {
-  if(to.matched.some(record => record.meta.requiresAuth) && !isAuthenticated) {
-    next({name: 'Login'});
+router.beforeEach(async (to, from, next) => {
+  const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
+
+  if (requiresAuth) {
+    const authStatus = await isAuthenticated();
+    if (!authStatus) {
+      next({ name: 'Login' });
+    } else {
+      next();
+    }
   } else {
     next();
   }
-})
+});
 
 export default router

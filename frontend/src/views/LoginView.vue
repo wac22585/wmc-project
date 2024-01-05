@@ -62,9 +62,8 @@
 
                 if(response.status === 200 && response.data) {
                     console.log('Login successfull', response.data);
-                    this.$router.push({name: 'Home'});
-
                     localStorage.setItem('authToken', response.data.token);
+                    this.$router.push({name: 'Home'});
                 } else {
                     console.log('Login failed');
                     alert('Login failed. Please check your credentials');
