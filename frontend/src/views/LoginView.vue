@@ -65,14 +65,15 @@
                     localStorage.setItem('authToken', response.data.token);
                     this.$router.push({name: 'Home'});
                 } else {
-                    console.log('Login failed');
                     alert('Login failed. Please check your credentials');
                 }
             } catch (error) {
-                if (error.response && error.response.status === 401) {
-                    this.invalidLogin = 'Invalid email or password';
-                } else {
-                    this.invalidLogin = 'An error occurred.';
+                if(error.response) {
+                    if (error.response.status === 401) {
+                        this.invalidLogin = error.response.data;
+                    } else  {
+                        this.invalidLogin = error.response.data;
+                    }
                 }
             }
         },
