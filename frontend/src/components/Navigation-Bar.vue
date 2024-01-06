@@ -67,10 +67,10 @@
                 localStorage.removeItem('authToken');
                 this.$router.push({name: 'Login'});
               } else {
-                  console.error('Error deleting user:', response.data);
+                 alert('Error deleting user:', response.data);
               }
             } catch(error) {
-              alert(error);
+              alert(error.response);
             }
           },
         }

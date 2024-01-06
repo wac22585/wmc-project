@@ -74,7 +74,7 @@
                     this.user = response.data;
                 }
                 else {
-                    console.log(response.data)
+                   alert(response.data)
                 }
                
                 const roles = await axios.get('roles/all');
@@ -93,23 +93,11 @@
                     await axios.put(`users/delete/${this.id}`);
                     this.$router.push({ name: 'Home' });
                 } catch (error) {
-                    alert(error);
+                    alert(error.response.data);
                 }
             },
             async save() {
                 try {  
-                    const updatedUserData = {
-                        firstname: this.user.firstname,
-                        lastname: this.user.lastname,
-                        email: this.user.email,
-                        phoneNumber: this.user.phoneNumber,
-                        birthdate: this.user.birthdate,
-                        roles: this.selectedRoles.map(roleId => {
-                            const role = this.roles.find(r => r.id === roleId);
-                            return role ? role.name : null;
-                        }).filter(roleName => roleName !== null)
-                    };
-                    console.log(updatedUserData)
                     const response = await axios.put(`users/update/${this.id}`, this.user);
                     if (response.status === 200) {
                         this.$router.push({ name: 'Home' });
@@ -117,7 +105,7 @@
                        alert(response.data)
                     }
                 } catch (error) {
-                  alert(error)
+                  alert(error.response.data)
                 }
             }
         }

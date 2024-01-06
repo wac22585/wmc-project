@@ -152,24 +152,29 @@ import { setTransitionHooks } from 'vue';
             },
             async addUser() {
                 this.invalidInput = '';
-                console.log(this.selectedRoles)
                 let user = this.user;
+
                 try {
                     if(user.firstname == null ||user.firstname == '' || user.lastname == null || user.lastname == '' ||
                        user.email == null || user.email == '' || this.selectedRoles.length == 0 || this.password == null || this.password == '' || 
                        this.confirmpassword == null || this.confirmpassword == '') {
                         this.invalidInput = 'Please fill out all required fields.';
+
                     } else if(!(/^[a-z.-]+@[a-z.-]+\.[a-z]+$/i.test(user.email))) {
                         this.invalidInput = 'Invalid e-mail.'
+
                     } else if(this.password != this.confirmpassword) {
                         this.invalidInput = 'Password mismatch.';
+
                     } else {
                         const formData = new URLSearchParams();
+
                         formData.append('firstname', user.firstname.charAt(0).toUpperCase() + user.firstname.slice(1));
                         formData.append('lastname', user.lastname.charAt(0).toUpperCase() + user.lastname.slice(1));
                         formData.append('email', user.email);
                         formData.append('password', this.password);
                         formData.append('number', BigInt(0));
+
                         if(this.dob != new Date()) 
                             formData.append('birthdate', this.dob);
                         formData.append('roles', this.selectedRoles);
@@ -179,11 +184,11 @@ import { setTransitionHooks } from 'vue';
                         if (response.status === 200 && response.data) {
                             this.$router.push({name: 'Home'});
                         } else {
-                            console.error('Error adding user');
+                           alert('An error occurred, pleaes try again.');
                         }
                     }
                 } catch (error) {
-                    console.error('An error occurred:', error);
+                   alert(error.response.data)
                 }
             }
         }
