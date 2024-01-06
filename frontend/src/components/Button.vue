@@ -52,6 +52,6 @@ export default {
         background: white;
         color: black;
         border: 1px solid #707070;
-        margin-right: 30px;
+        margin-right: 20px;
     }
 </style>

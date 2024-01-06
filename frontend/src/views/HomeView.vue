@@ -166,10 +166,6 @@ export default {
     add() {
       this.$router.push({ name: 'Add' });
     },
-    async remove(id) {
-      // Placeholder for update functionality
-      console.log('Update user with id:', id);
-    },
     async deleteUser(id, index) {
       try {
         const response = await axios.put(`users/delete/${id}`);

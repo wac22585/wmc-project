@@ -2,12 +2,12 @@
     <div class="input-container">
       <div class="input-with-icon">
         <input :type="inputType === 'secure' || (inputType === 'password' && !showPassword) ? 'password' : 'text'" 
-        class="input-form"
         :value="modelValue"
         @input="$emit('update:modelValue', $event.target.value)"
         :style="{width: width}"
         :placeholder="label"
         :readonly="readonly"
+        :class="['input-form', { 'borderClass': border }]"
         >
         <div v-if="search" class="search-icon">
           <v-icon>mdi-magnify</v-icon>
@@ -47,6 +47,12 @@
         password: '',
       };
     },
+    props: {
+      border: {
+        type: Boolean,
+        default: false,
+      }
+    },
     methods: {
       onFocus() {
         this.$el.style.borderColor = '#000';
@@ -83,6 +89,12 @@
   
   .input-form:focus {
     outline: none;
+  }
+
+  .borderClass {
+    border: none;
+    border-bottom: solid 1px #707070;
+    background-color: red !important;
   }
   
   .eye-icon, .search-icon {

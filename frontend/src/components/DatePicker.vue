@@ -1,6 +1,6 @@
 <template>
     <label for="">Date of Birth</label>
-    <InputField id="dob" v-model="formattedDate" @click="openDatePicker" @focus="openDatePicker" readonly="true" class="inputfield" />
+    <InputField :border="border" id="dob" v-model="formattedDate" @click="openDatePicker" @focus="openDatePicker" readonly="true" class="inputfield" />
     <v-dialog width="300" class="date-picker" v-model="showDatePicker" :return-value.sync="dob" persistent>
         <v-date-picker v-model="dob" :max="maxDate" @input="dateSelected">
         <template v-slot:actions>
@@ -13,6 +13,7 @@
 
 <script setup>
     import InputField from '@/components/Input.vue';
+import { ref } from 'vue';
 </script>
 
 <script>
@@ -20,10 +21,25 @@
         components: {
             InputField
         },
+        props: {
+            border: {
+                type: Boolean,
+                default: false
+            },
+            defaultDate: {
+                type: Date,
+                default: () => new Date()
+            }
+        },
         data() {
             return {
                 showDatePicker: false,
-                dob: new Date(),
+                dob: this.defaultDate
+            }
+        },
+        watch: {
+            defaultDate(newVal) {
+                this.dob = newVal;
             }
         },
         computed: {
