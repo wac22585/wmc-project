@@ -74,16 +74,6 @@ public class UserController
         return ResponseEntity.ok("Logout successfull");
     }
 
-    @GetMapping("/validateToken")
-    public ResponseEntity<?> validateToken(@RequestParam("authToken") String authToken) {
-        User user = userRepository.findByAuthToken(authToken);
-        if(user != null) {
-            return ResponseEntity.ok().build();
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-    }
-
     @PostMapping("/add")
     public ResponseEntity<?> createUser(@RequestParam("firstname") String firstname,
                                         @RequestParam("lastname") String lastname,
@@ -93,51 +83,57 @@ public class UserController
                                         @RequestParam(value = "birthdate", required = false) Date birthdate,
                                         @RequestParam(value = "roles") List<Long> roleIds)
     {
-        if(firstname == null || firstname.isBlank() || lastname == null || lastname.isBlank() || email == null ||
-                email.isBlank() || password == null || password.isBlank() || roleIds.isEmpty()){
-            return ResponseEntity.badRequest().body("Argument missing!");
-        }
-
-        User user = User.builder()
-                .firstname(firstname)
-                .lastname(lastname)
-                .email(email)
-                .phoneNumber(phoneNumber)
-                .created(LocalDateTime.now())
-                .isDeleted(false)
-                .userImage(null)
-                .authToken(null)
-                .deleted(null)
-                .build();
-        if(birthdate != null) user.setBirthdate(birthdate);
-        user.setPassword(password);
-        userRepository.save(user);
-
-
-        for(Long roleId : roleIds) {
-            Role role = roleRepository.findById(roleId);
-            if(role != null) {
-                UserRole userRole = UserRole.builder()
-                        .id(new UserRoleId(user.getId(), roleId))
-                        .user(user)
-                        .role(role)
-                        .build();
-                userRoleRepository.save(userRole);
+        try{
+            if(firstname == null || firstname.isBlank() || lastname == null || lastname.isBlank() || email == null ||
+                    email.isBlank() || password == null || password.isBlank() || roleIds.isEmpty()){
+                return ResponseEntity.badRequest().body("Arguments are missing. Please try again.");
             }
-        }
 
-        return ResponseEntity.ok("Added user successfully");
+            User user = User.builder()
+                    .firstname(firstname)
+                    .lastname(lastname)
+                    .email(email)
+                    .phoneNumber(phoneNumber)
+                    .created(LocalDateTime.now())
+                    .isDeleted(false)
+                    .userImage(null)
+                    .authToken(null)
+                    .deleted(null)
+                    .build();
+            if(birthdate != null) user.setBirthdate(birthdate);
+            user.setPassword(password);
+            userRepository.save(user);
+
+
+            for(Long roleId : roleIds) {
+                Role role = roleRepository.findById(roleId);
+                if(role != null) {
+                    UserRole userRole = UserRole.builder()
+                            .id(new UserRoleId(user.getId(), roleId))
+                            .user(user)
+                            .role(role)
+                            .build();
+                    userRoleRepository.save(userRole);
+                }
+            }
+
+            return ResponseEntity.ok("Added user successfully");
+        } catch(Exception e)
+        {
+            return ResponseEntity.badRequest().body("User could not be added. Please try again.");
+        }
     }
 
     @PutMapping("update/{id}")
     public @ResponseStatus ResponseEntity update(@PathVariable final UUID id, @RequestBody UserDTO userDTO) {
-        User user = userRepository.findById(id);
-        if(user != null) {
-            user.setFirstname(userDTO.firstname());
-            user.setLastname(userDTO.lastname());
-            user.setEmail(userDTO.email());
-            user.setPhoneNumber(userDTO.phoneNumber());
-            user.setBirthdate(userDTO.birthdate());
+        try {
+            User user = userRepository.findById(id);
+            if(user != null) {
+                user.setFirstname(userDTO.firstname());
+                user.setLastname(userDTO.lastname());
+                user.setEmail(userDTO.email());
+                user.setPhoneNumber(userDTO.phoneNumber());
+                user.setBirthdate(userDTO.birthdate());
             /*List<UserRole> userRoles = new ArrayList<>();
             for (String roleName : userDTO.roles()) {
                 try {
@@ -155,10 +151,14 @@ public class UserController
                 }
             }
             user.setRoles(userRoles);*/
-            userRepository.save(user);
-            return new ResponseEntity("OK", HttpStatusCode.valueOf(200));
+                userRepository.save(user);
+                return new ResponseEntity("OK", HttpStatusCode.valueOf(200));
+            }
+            return new ResponseEntity("User could not be found. Please try again.", HttpStatus.NOT_FOUND);
+        } catch(Exception e) {
+            return new ResponseEntity("Something went wrong. Please try again.", HttpStatus.BAD_REQUEST);
         }
-        return new ResponseEntity("Not found", HttpStatus.NOT_FOUND);
+
     }
 
     @PutMapping("delete/{id}")
@@ -174,10 +174,10 @@ public class UserController
                 return new ResponseEntity("OK", HttpStatusCode.valueOf(200));
             } catch (Exception e)
             {
-                return new ResponseEntity("Error", HttpStatus.BAD_REQUEST);
+                return new ResponseEntity("Error deleting user. Please try again.", HttpStatus.BAD_REQUEST);
             }
         }
-        return new ResponseEntity("Not found", HttpStatus.NOT_FOUND);
+        return new ResponseEntity("User could not be found. Please try again.", HttpStatus.NOT_FOUND);
     }
 
     @GetMapping("get/{id}")
@@ -188,6 +188,16 @@ public class UserController
             return new ResponseEntity<>(userDTO, HttpStatus.OK);
         }
         return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+    }
+
+    @GetMapping("/validateToken")
+    public ResponseEntity<?> validateToken(@RequestParam("authToken") String authToken) {
+        User user = userRepository.findByAuthToken(authToken);
+        if(user != null) {
+            return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
     }
 
     public static String generateAuthToken() {
