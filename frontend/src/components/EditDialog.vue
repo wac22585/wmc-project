@@ -107,10 +107,10 @@
                 for (let rule of rules) {
                     const result = rule(fieldValue);
                     if (result !== true) {
-                        return result; // Return the error message if validation fails
+                        return result;
                     }
                 }
-                return true; // Return true if all validations pass
+                return true;
             },
             async deleteUser() {
                 try {
