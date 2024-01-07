@@ -1,102 +1,101 @@
 <template>
   <v-layout>
     <NavBar />
-    <v-main class="main">
-      <div class="title">Users</div>
-      <div class="subtitle">view and manage users</div>
-      <div class="add-btns">
-        <InputField  label="Search" class="inputfield"></InputField>
-        <v-divider vertical class="mx-2"></v-divider>
-        <Button content="Filter" />
-        <Button content="Add" @click="add" />
-      </div>
-      <div>
-        <v-data-table
-          :headers="dynamicHeaders"
-          :items="users"
-          :items-per-page="10"
-          :class="{'table-width': colapse}"
-        >
-          <template v-slot:headers>
-            <tr>
-              <th class="text-left table-head">User</th>
-              <th v-if="!isSmallScreen" class="text-left table-head">Created</th>
-              <th class="text-left table-head">Roles</th>
-              <th class="text-left table-head"></th>
-            </tr>
-          </template>
+    <v-main class="d-flex align-center justify-center">
+      <v-container class="main">
+        <div class="title">Users</div>
+        <div class="subtitle">view and manage users</div>
+        <div class="add-btns">
+          <v-text-field prepend-inner-icon="mdi-magnify" single-line hide-details label="Search..." variant="outlined" ></v-text-field>
+          <v-divider vertical class="mx-2"></v-divider>
+        </div>
+        <div>
+          <v-data-table
+            :headers="dynamicHeaders"
+            :items="users"
+            :items-per-page="10"
+          >
+            <template v-slot:headers>
+              <tr>
+                <th class="text-left table-head">User</th>
+                <th v-if="!isSmallScreen" class="text-left table-head">Created</th>
+                <th class="text-left table-head">Roles</th>
+                <th class="text-left table-head"></th>
+              </tr>
+            </template>
 
-          <template v-slot:item.fullname="{ item }">
-            <span class="username collapsible-text" :class="{'collapsible-small-screen': colapse}">{{ item.firstname }} {{ item.lastname }}</span>
-            <span class="collapsible-text" :class="{'collapsible-small-screen': colapse}">{{ item.email }}</span>
-          </template>
+            <template v-slot:item.fullname="{ item }">
+              <span class="username collapsible-text" :class="{'collapsible-small-screen': colapse}">{{ item.firstname }} {{ item.lastname }}</span>
+              <span class="collapsible-text" :class="{'collapsible-small-screen': colapse}">{{ item.email }}</span>
+            </template>
 
-          <template v-slot:item.created="{ item }">
-            {{ new Date(item.created).toLocaleDateString("de-DE") }}
-          </template>
+            <template v-slot:item.created="{ item }">
+              {{ new Date(item.created).toLocaleDateString("de-DE") }}
+            </template>
 
-          <template v-slot:item.roles="{ item }">
-            <div v-if="!colapse && item.roles && item.roles.length > 0">
-                  <v-chip v-if="item.roles[0]">
-                    {{ item.roles[0] }}
-                  </v-chip>
-                  <span v-if="item.roles.length > 1" class="text-grey text-caption">
-                    (+{{ item.roles.length - 1 }} other<span v-if="item.roles.length > 2">s</span>)
-                  </span>
-                </div>
-                <div v-if="colapse && item.roles && item.roles.length > 0">
-                  <v-chip>{{ item.roles[0] }}<span v-if="item.roles.length > 1">, ...</span></v-chip>
-                </div>
-          </template>
+            <template v-slot:item.roles="{ item }">
+              <div v-if="!colapse && item.roles && item.roles.length > 0">
+                    <v-chip v-if="item.roles[0]">
+                      {{ item.roles[0] }}
+                    </v-chip>
+                    <span v-if="item.roles.length > 1" class="text-grey text-caption">
+                      (+{{ item.roles.length - 1 }} other<span v-if="item.roles.length > 2">s</span>)
+                    </span>
+                  </div>
+                  <div v-if="colapse && item.roles && item.roles.length > 0">
+                    <v-chip>{{ item.roles[0] }}<span v-if="item.roles.length > 1">, ...</span></v-chip>
+                  </div>
+            </template>
 
-          <template v-slot:item.actions="{ item, index }">
-            <v-menu
-                  v-model="dialogs[index].showOuterDialog"
-                  :close-on-content-click="false"
-                  location="end"
-                >
-                  <template v-slot:activator="{ props} ">
-                    <button 
-                      class="btn-more" 
-                      @click="openOutderDialog(index)" 
-                      v-bind="props">
-                        <svg-icon type="mdi" :path="path"></svg-icon>
-                    </button>
-                  </template>
+            <template v-slot:item.actions="{ item, index }">
+              <v-menu
+                    v-model="dialogs[index].showOuterDialog"
+                    :close-on-content-click="false"
+                    location="end"
+                  >
+                    <template v-slot:activator="{ props} ">
+                      <button 
+                        class="btn-more" 
+                        @click="openOutderDialog(index)" 
+                        v-bind="props">
+                          <svg-icon type="mdi" :path="path"></svg-icon>
+                      </button>
+                    </template>
 
-                  <v-card>
-                    <router-link class="router-link" v-bind:to="`/edit/${item.id}`">
-                      <v-btn variant="text" prepend-icon="mdi-pencil" block class="align-start">
-                        Edit user
-                      </v-btn>
-                    </router-link>
-                    <v-divider></v-divider>
-                      <v-btn variant="text" prepend-icon="mdi-delete" block @click="openInnerDialog(index)">
-                        Delete user
-                      </v-btn>
-                  </v-card>
-                </v-menu>
-                <v-dialog v-model="dialogs[index].showInnerDialog" width="300">
-                  <v-card class="popup-window text-center">
-                    <v-card-title>
-                      Are you sure?
-                    </v-card-title>
-                    <v-card-text>
-                      This will not permanently delete the user!
-                    </v-card-text>
-                    <v-card-actions class="confirm-action">
-                      <Btn label="Cancel" 
-                      @click="closeInnerDialog(index)"  
-                      useWhiteBackground="true"/>
-                      <Btn label="Delete" 
-                      @click="deleteUser(item.id, index)" 
-                      />
-                    </v-card-actions>
-                  </v-card>
-                </v-dialog>
-          </template>
-        </v-data-table>
-      </div>
+                    <v-card>
+                      <router-link class="router-link" v-bind:to="`/edit/${item.id}`">
+                        <v-btn variant="text" prepend-icon="mdi-pencil" block class="align-start">
+                          Edit user
+                        </v-btn>
+                      </router-link>
+                      <v-divider></v-divider>
+                        <v-btn variant="text" prepend-icon="mdi-delete" block @click="openInnerDialog(index)">
+                          Delete user
+                        </v-btn>
+                    </v-card>
+                  </v-menu>
+                  <v-dialog v-model="dialogs[index].showInnerDialog" width="300">
+                    <v-card class="popup-window text-center">
+                      <v-card-title>
+                        Are you sure?
+                      </v-card-title>
+                      <v-card-text>
+                        This will not permanently delete the user!
+                      </v-card-text>
+                      <v-card-actions class="confirm-action">
+                        <Btn label="Cancel" 
+                        @click="closeInnerDialog(index)"  
+                        useWhiteBackground="true"/>
+                        <Btn label="Delete" 
+                        @click="deleteUser(item.id, index)" 
+                        />
+                      </v-card-actions>
+                    </v-card>
+                  </v-dialog>
+            </template>
+          </v-data-table>
+        </div>
+      </v-container>
     </v-main>
   </v-layout>
 </template>
@@ -204,6 +203,7 @@ export default {
   .main {
     margin-top: 70px;
     margin-right: 70px;
+    padding-inline: 0px !important;
   }
   .title {
     color: black;
@@ -214,6 +214,7 @@ export default {
     color: black;
     font-size: 20px;
     margin-top: -10px;
+    margin-bottom: 20px;
   }
 
 
@@ -228,10 +229,6 @@ export default {
   .btn-more {
     border-radius: 50%;
     padding: 2px;
-  }
-
-  .inputfield {
-    display: inline-block;
   }
 
   .menu {
@@ -280,9 +277,5 @@ export default {
 
   .collapsible-small-screen {
     max-width: 90px;
-  }
-
-  .table-width {
-    width: 85% !important;
   }
 </style>
