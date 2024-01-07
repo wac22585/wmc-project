@@ -144,10 +144,11 @@ export default {
     const searchLower = this.searchQuery.toLowerCase();
 
     return this.users.filter(user => {
+      const firstAndLastNameMatch = (user.firstname + ' ' + user.lastname).toLowerCase().startsWith(this.searchQuery);
       const firstnameMatch = user.firstname.toLowerCase().startsWith(searchLower);
       const lastnameMatch = user.lastname.toLowerCase().startsWith(searchLower);
       const emailMatch = user.email.toLowerCase().startsWith(searchLower);
-      return firstnameMatch || lastnameMatch || emailMatch;
+      return firstAndLastNameMatch || firstnameMatch || lastnameMatch || emailMatch;
     });
   }
   },

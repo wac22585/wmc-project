@@ -1,6 +1,6 @@
 <template>
-    <v-container class="outer">
-        <div class="inner">
+    <v-container class="d-flex align-center justify-center">
+        <div style="width: 925px;">
             <button @click="back">
             <v-icon size="40">mdi-arrow-left</v-icon>
             </button>
@@ -196,18 +196,6 @@ import { setTransitionHooks } from 'vue';
 </script>
 
 <style scoped>
-    .inner {
-       display: inline-block;
-       margin: auto;
-       width: 925px;
-       min-width: 300px;
-    }
-
-    .outer{
-        display: flex;
-        align-items: center;
-    }
-
     .title {
         margin-top: 10px;
         color: black;
