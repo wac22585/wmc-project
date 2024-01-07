@@ -57,23 +57,17 @@
                     params: {
                         email: email,
                         password: encodeURIComponent(password)
-                    }
+                    },
+                    withCredentials: true
                 });
-
-                if(response.status === 200 && response.data) {
-                    localStorage.setItem('authToken', response.data.token);
-                    this.$router.push({name: 'Home'});
+                if(response.status === 200) {
+                   this.$router.push({name: 'Home'});
                 } else {
                     alert('Login failed. Please check your credentials');
                 }
             } catch (error) {
-                if(error.response) {
-                    if (error.response.status === 401) {
-                        this.invalidLogin = error.response.data;
-                    } else  {
-                        this.invalidLogin = error.response.data;
-                    }
-                }
+                console.log(error)
+                this.invalidLogin = error.response?.data || 'Login failed. Please try again.';
             }
         },
     },

@@ -40,17 +40,9 @@ public class User
     private String authToken;
     @ManyToOne(cascade = CascadeType.PERSIST)
     private CountryNumber countryNumber;
-    @OneToMany(cascade = CascadeType.PERSIST, mappedBy = "user")
+    @OneToMany(cascade = CascadeType.PERSIST, mappedBy = "user", fetch = FetchType.EAGER)
     @JsonIgnore
     private List<UserRole> roles;
-
-    public void setPassword(String password) {
-        this.passwordHash = BCrypt.hashpw(password, BCrypt.gensalt());
-    }
-
-    public boolean verifyPassword(String password) {
-        return BCrypt.checkpw(password, this.passwordHash);
-    }
 
     public List<String> getRoles()
     {

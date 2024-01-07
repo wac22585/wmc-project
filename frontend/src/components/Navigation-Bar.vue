@@ -57,20 +57,17 @@
           },
           async logout() {
             try {
-              const token = localStorage.getItem('authToken');
               const response = await axios.put('/users/logout', null, {
-                params: {
-                  authToken: token
-                }
+                withCredentials: true
               });
-              if(response.data) {
-                localStorage.removeItem('authToken');
+
+              if(response.status === 200) {
                 this.$router.push({name: 'Login'});
               } else {
                  alert('Error deleting user:', response.data);
               }
             } catch(error) {
-              alert(error.response);
+              alert('An error occurred during logout');
             }
           },
         }

@@ -3,12 +3,8 @@ import axios from 'axios';
 
 const isAuthenticated = async  () => {
   try {
-    const token = localStorage.getItem('authToken');
-    if(token == null) return false;
     const response = await axios.get("/users/validateToken", {
-      params: {
-        authToken: token
-      }
+      withCredentials: true
     });
     return response.status === 200;
   } catch (error) {
@@ -18,7 +14,7 @@ const isAuthenticated = async  () => {
 
 const routes = [
   {
-    path: '',
+    path: '/',
     name: 'Login',
     component: () => import('@/views/LoginView.vue'),
   },

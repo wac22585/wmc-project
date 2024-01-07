@@ -5,9 +5,13 @@ import at.spengergasse.backend.model.*;
 import at.spengergasse.backend.persistence.RoleRepository;
 import at.spengergasse.backend.persistence.UserRepository;
 import at.spengergasse.backend.persistence.UserRoleRepository;
+import at.spengergasse.backend.service.JwtService;
+import at.spengergasse.backend.service.UserService;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,7 +22,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/users")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 public class UserController
 {
     @Autowired
@@ -26,8 +30,15 @@ public class UserController
 
     @Autowired
     private RoleRepository roleRepository;
+
     @Autowired
     private UserRoleRepository userRoleRepository;
+
+    @Autowired
+    private JwtService jwtService;
+
+    @Autowired
+    private UserService userService;
 
     @GetMapping("/all")
     public @ResponseBody Iterable<UserDTO> allUsers() {
@@ -40,38 +51,40 @@ public class UserController
     }
 
     @GetMapping("/login")
-    public ResponseEntity<?> login(@RequestParam("email") String email, @RequestParam("password") String password)
+    public ResponseEntity<?> login(@RequestParam("email") String email, @RequestParam("password") String password, HttpServletResponse response)
     {
-       if(email == null || email.isBlank()) return ResponseEntity.badRequest().body("Email is required.");
-       if(password == null || password.isBlank()) return ResponseEntity.badRequest().body("Password is required.");
+        try {
+            UserDTO userDTO = userService.login(email, password);
+            if (userDTO != null) {
+                String jwtToken = jwtService.GenerateToken(email);
+                ResponseCookie jwtCookie = ResponseCookie.from("accessToken", jwtToken)
+                        .httpOnly(true)
+                        .secure(true)
+                        .path("/")
+                        .maxAge(86400)
+                        .build();
 
-       User user = userRepository.findByEmail(email);
-       if(user == null || !user.verifyPassword(password))
-       {
-           return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password.");
-       }
-
-       String authToken = generateAuthToken();
-
-       user.setAuthToken(authToken);
-       userRepository.save(user);
-
-       UserDTO userDTO = new UserDTO(user.getId(), user.getEmail(), user.getPhoneNumber(), user.getFirstname(), user.getLastname(), user.getCreated(), user.getBirthdate(), user.getRoles());
-
-       Map<String, Object> response = new HashMap<>();
-       response.put("token", authToken);
-       response.put("user", userDTO);
-
-       return ResponseEntity.ok(response);
+                response.addHeader("Set-Cookie", jwtCookie.toString());
+                return ResponseEntity.ok(userDTO);
+            } else {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password.");
+            }
+        } catch(Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password.");
+        }
     }
 
     @PutMapping("/logout")
-    public ResponseEntity<?> logout(@RequestParam("authToken") String authToken) {
-        User u = userRepository.findByAuthToken(authToken);
-        if(u == null) return ResponseEntity.notFound().build();
-        u.setAuthToken(null);
-        userRepository.save(u);
-        return ResponseEntity.ok("Logout successfull");
+    public ResponseEntity<?> logout(HttpServletResponse response) {
+        ResponseCookie jwtCookie = ResponseCookie.from("accessToken", null)
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(0)
+                .build();
+        response.addHeader("Set-Cookie", jwtCookie.toString());
+        return ResponseEntity.ok("Logout successful");
     }
 
     @PostMapping("/add")
@@ -83,43 +96,12 @@ public class UserController
                                         @RequestParam(value = "birthdate", required = false) Date birthdate,
                                         @RequestParam(value = "roles") List<Long> roleIds)
     {
-        try{
-            if(firstname == null || firstname.isBlank() || lastname == null || lastname.isBlank() || email == null ||
-                    email.isBlank() || password == null || password.isBlank() || roleIds.isEmpty()){
-                return ResponseEntity.badRequest().body("Arguments are missing. Please try again.");
-            }
-
-            User user = User.builder()
-                    .firstname(firstname)
-                    .lastname(lastname)
-                    .email(email)
-                    .phoneNumber(phoneNumber)
-                    .created(LocalDateTime.now())
-                    .isDeleted(false)
-                    .userImage(null)
-                    .authToken(null)
-                    .deleted(null)
-                    .build();
-            if(birthdate != null) user.setBirthdate(birthdate);
-            user.setPassword(password);
-            userRepository.save(user);
-
-
-            for(Long roleId : roleIds) {
-                Role role = roleRepository.findById(roleId);
-                if(role != null) {
-                    UserRole userRole = UserRole.builder()
-                            .id(new UserRoleId(user.getId(), roleId))
-                            .user(user)
-                            .role(role)
-                            .build();
-                    userRoleRepository.save(userRole);
-                }
-            }
-
-            return ResponseEntity.ok("Added user successfully");
-        } catch(Exception e)
-        {
+        try {
+            String result = userService.createUser(firstname, lastname, email, password, phoneNumber, birthdate, roleIds);
+            return ResponseEntity.ok(result);
+        } catch(IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch(Exception e) {
             return ResponseEntity.badRequest().body("User could not be added. Please try again.");
         }
     }
@@ -191,25 +173,19 @@ public class UserController
     }
 
     @GetMapping("/validateToken")
-    public ResponseEntity<?> validateToken(@RequestParam("authToken") String authToken) {
-        User user = userRepository.findByAuthToken(authToken);
-        if(user != null) {
-            return ResponseEntity.ok().build();
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
+    public ResponseEntity<?> validateToken(@CookieValue(name = "accessToken", required = false) String jwtToken) {
+       if(jwtToken == null || jwtToken.isEmpty()) {
+           return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+       }
+
+       try {
+            if(jwtService.validateToken(jwtToken)) {
+                return ResponseEntity.ok().build();
+            } else {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+       } catch(Exception e) {
+           return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+       }
     }
-
-    public static String generateAuthToken() {
-        int tokenLength = 32;
-
-        byte[] randomBytes = new byte[tokenLength];
-        new SecureRandom().nextBytes(randomBytes);
-
-        String authToken = Base64.getEncoder().encodeToString(randomBytes);
-
-        return authToken;
-    }
-
-
 }

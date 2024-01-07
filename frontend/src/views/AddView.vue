@@ -134,7 +134,7 @@ import { setTransitionHooks } from 'vue';
                 alert('An error occurred: ', error)
             }
 
-            try {
+            /*try {
                 const response = await axios.get('/countries/all');
                 this.countries = response.data;
                 for(const c of this.countries) {
@@ -144,7 +144,7 @@ import { setTransitionHooks } from 'vue';
                 
             } catch (error) {
                 alert('An error occurred: ', error)
-            }
+            }*/
         },
         methods: {
             back() {
