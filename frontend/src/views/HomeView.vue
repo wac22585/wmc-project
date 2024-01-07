@@ -6,13 +6,13 @@
         <div class="title">Users</div>
         <div class="subtitle">view and manage users</div>
         <div class="add-btns">
-          <v-text-field prepend-inner-icon="mdi-magnify" single-line hide-details label="Search..." variant="outlined" ></v-text-field>
+          <v-text-field v-model="searchQuery" prepend-inner-icon="mdi-magnify" single-line hide-details label="Search..." variant="outlined" ></v-text-field>
           <v-divider vertical class="mx-2"></v-divider>
         </div>
         <div>
           <v-data-table
             :headers="dynamicHeaders"
-            :items="users"
+            :items="filteredUsers"
             :items-per-page="10"
           >
             <template v-slot:headers>
@@ -124,6 +124,7 @@ export default {
       users: [],
       dialogs: [],
       path: mdiDotsHorizontal,
+      searchQuery: '',
       isSmallScreen: false,
       colapse: false,
     };
@@ -138,6 +139,17 @@ export default {
       ];
       return headers;
     },
+    filteredUsers() {
+    if (!this.searchQuery) return this.users;
+    const searchLower = this.searchQuery.toLowerCase();
+
+    return this.users.filter(user => {
+      const firstnameMatch = user.firstname.toLowerCase().startsWith(searchLower);
+      const lastnameMatch = user.lastname.toLowerCase().startsWith(searchLower);
+      const emailMatch = user.email.toLowerCase().startsWith(searchLower);
+      return firstnameMatch || lastnameMatch || emailMatch;
+    });
+  }
   },
   async mounted() {
     this.checkScreenSize();
