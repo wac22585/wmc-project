@@ -29,7 +29,7 @@
                     this.user = response.data;
                 }
                 else {
-                    console.log(response.data)
+                    alert(response.data)
                 }
             } catch(error) {
                 alert(error)

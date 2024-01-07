@@ -131,7 +131,7 @@ import { setTransitionHooks } from 'vue';
                     this.roles.push(role);
                 }
             } catch (error) {
-                console.log('An error occurred: ', error)
+                alert('An error occurred: ', error)
             }
 
             try {
@@ -141,9 +141,9 @@ import { setTransitionHooks } from 'vue';
                     let text = '+' + c.dialCode + ' (' + c.countrycode + ')';
                     c.text = text;
                 }
-                console.log(this.countries);
+                
             } catch (error) {
-                console.log('An error occurred: ', error)
+                alert('An error occurred: ', error)
             }
         },
         methods: {

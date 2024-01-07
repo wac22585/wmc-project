@@ -154,7 +154,6 @@ export default {
         }
       });
       this.dialogs = this.users.map(() => ({ showOuterDialog: false, showInnerDialog: false }));
-      console.log(this.users)
     } catch (e) {
       alert(e);
     }
@@ -173,14 +172,13 @@ export default {
           this.users.splice(index, 1);
           this.dialogs.splice(index, 1);
         } else {
-          console.error('Error deleting user:', response.data);
+          alert('Error deleting user:', response.data);
         }
       } catch (e) {
         alert(e);
       }
     },
     openOutderDialog(index) {
-      console.log(this.dialogs)
       this.dialogs[index].showOuterDialog = true;
     },
     openInnerDialog(index) {

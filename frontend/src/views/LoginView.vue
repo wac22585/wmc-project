@@ -61,7 +61,6 @@
                 });
 
                 if(response.status === 200 && response.data) {
-                    console.log('Login successfull', response.data);
                     localStorage.setItem('authToken', response.data.token);
                     this.$router.push({name: 'Home'});
                 } else {
@@ -95,6 +94,11 @@
         margin: auto;
     }
 
+    .btn-div {
+        display: flex;
+        justify-content: end;
+    }
+
     .title {
         color: black;
         font-size: 30px;
@@ -108,11 +112,6 @@
     .form {
         margin-top: 20px;
         margin-bottom: 10px;
-    }
-
-    .btn-div {
-        display: flex;
-        justify-content: end;
     }
 
     .error-message {

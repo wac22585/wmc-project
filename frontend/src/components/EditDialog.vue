@@ -1,44 +1,46 @@
 <template>
-    <label for="">Firstname</label>
-    <v-text-field v-model="user.firstname" append-inner-icon="mdi-pencil"  variant="underlined"></v-text-field>
-    <label for="">Lastname</label>
-    <v-text-field v-model="user.lastname" append-inner-icon="mdi-pencil"  variant="underlined"></v-text-field>
-    <label for="">Email address</label>
-    <v-text-field append-inner-icon="mdi-pencil" v-model="user.email" variant="underlined"></v-text-field>
+    <v-form ref="form" @submit-prevent="save" @submit="save">
+        <label for="">Firstname</label>
+        <v-text-field :rules="[rules.required, rules.counter]" v-model="user.firstname" append-inner-icon="mdi-pencil"  variant="underlined"></v-text-field>
+        <label for="">Lastname</label>
+        <v-text-field :rules="[rules.required, rules.counter]" v-model="user.lastname" append-inner-icon="mdi-pencil"  variant="underlined"></v-text-field>
 
-    <label for="">Phone-Number</label>
-    <v-text-field append-inner-icon="mdi-pencil" v-model="user.phoneNumber" variant="underlined"></v-text-field>
+        <label for="">Email address</label>
+        <v-text-field :rules="[rules.required, rules.email]" append-inner-icon="mdi-pencil" v-model="user.email" variant="underlined"></v-text-field>
 
-    <label for="">Roles</label>
-    <v-select
-        :items="roles"
-        item-title="name"
-        item-value="id"
-        v-model="selectedRoles"
-        bg-color="none"
-        density="compact"
-        variant="plain"
-        multiple
-        class="select"
-    >
-        <template v-slot:selection="{item, index}">
-            <v-chip v-if="index < 2">
-                <span>{{ item.title }}</span>
-            </v-chip>
-            <span 
-            v-if="index === 2"
-            class="text-grey text-caption align-self-center"
-            >
-                (+{{ selectedRoles.length - 2 }} others)
-            </span>
-        </template>
-    </v-select>
-    <DatePicker :defaultDate="computedDefaultDate" :border="true"/>
+        <label for="">Phone-Number</label>
+        <v-text-field :rules="[rules.required, rules.phoneNumber]" append-inner-icon="mdi-pencil" v-model="user.phoneNumber" variant="underlined"></v-text-field>
 
-    <div class="btn-div">
-        <Button :useWhiteBackground="true" label="Delete"  @click="deleteUser"/>
-        <Button label="Save" @click="save"/>
-    </div>
+        <label for="">Roles</label>
+        <v-select
+            :rules="[rules.required, rules.roles]"
+            :items="roles"
+            item-title="name"
+            item-value="id"
+            v-model="selectedRoles"
+            bg-color="none"
+            variant="underlined"
+            multiple
+        >
+            <template v-slot:selection="{item, index}">
+                <v-chip v-if="index < 2">
+                    <span>{{ item.title }}</span>
+                </v-chip>
+                <span 
+                v-if="index === 2"
+                class="text-grey text-caption align-self-center"
+                >
+                    (+{{ selectedRoles.length - 2 }} others)
+                </span>
+            </template>
+        </v-select>
+        <DatePicker :defaultDate="computedDefaultDate" :border="true"/>
+
+        <div class="btn-div">
+            <Button :useWhiteBackground="true" label="Delete"  @click="deleteUser"/>
+            <Button label="Save" @click="save"/>
+        </div>
+    </v-form>
 </template>
 
 <script setup>
@@ -55,6 +57,19 @@
                 user: {},
                 id: this.$route.params.id,
                 selectedRoles: [],
+                rules: {
+                    required: value => !!value || 'Required.',
+                    counter: value => value.length <= 20 || 'Max 20 characters.',
+                    email: value => {
+                        const pattern = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+                        return pattern.test(value) || 'Invalid e-mail.'
+                    },
+                    phoneNumber: value => {
+                        const pattern = /^\d{7,15}$/;
+                        return pattern.test(value) || 'Invalid phone number.';
+                    },
+                    roles: value => this.selectedRoles.length > 0 || 'At least one role must be selected.',
+                },
             }
         },
         computed: {
@@ -88,6 +103,15 @@
             }
         },
         methods: {
+            validateField(fieldValue, rules) {
+                for (let rule of rules) {
+                    const result = rule(fieldValue);
+                    if (result !== true) {
+                        return result; // Return the error message if validation fails
+                    }
+                }
+                return true; // Return true if all validations pass
+            },
             async deleteUser() {
                 try {
                     await axios.put(`users/delete/${this.id}`);
@@ -97,6 +121,16 @@
                 }
             },
             async save() {
+                const user = this.user;
+                const rules = this.rules;
+                if (this.validateField(user.firstname, [rules.required, rules.counter]) !== true ||
+                this.validateField(user.lastname, [rules.required, rules.counter]) !== true ||
+                this.validateField(user.email, [rules.required, rules.email]) !== true ||
+                this.validateField(user.phoneNumber, [rules.required, rules.phoneNumber]) !== true ||
+                this.validateField(this.selectedRoles, [rules.required, rules.roles]) !== true) {
+                return;
+                }
+
                 try {  
                     const response = await axios.put(`users/update/${this.id}`, this.user);
                     if (response.status === 200) {
@@ -112,19 +146,9 @@
     }
 </script>
 
-<style scoped>
+<style>
     .btn-div {
         display: flex;
         justify-content: end;
-    }
-
-    .select {
-        border-bottom: #707070 1px solid;
-        background: white !important;
-        height: 40px;
-        margin-bottom: 20px;
-        min-width: 300px;
-        padding-inline: 10px;
-        display: block;
     }
 </style>
