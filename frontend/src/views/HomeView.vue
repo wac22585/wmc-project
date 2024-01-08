@@ -144,6 +144,7 @@ export default {
     const searchLower = this.searchQuery.toLowerCase();
 
     return this.users.filter(user => {
+      if(user.firstname == null || user.lastname == null || user.email == null ) return false;
       const firstAndLastNameMatch = (user.firstname + ' ' + user.lastname).toLowerCase().startsWith(this.searchQuery);
       const firstnameMatch = user.firstname.toLowerCase().startsWith(searchLower);
       const lastnameMatch = user.lastname.toLowerCase().startsWith(searchLower);
@@ -156,7 +157,9 @@ export default {
     this.checkScreenSize();
     window.addEventListener('resize', this.checkScreenSize)
     try {
-      const response = await axios.get('users/all');
+      const response = await axios.get('users/all',{
+          withCredentials: true
+        });
       this.users = response.data;
       this.users.forEach(u => {
         if (u.roles && u.roles.length > 0) {
@@ -179,7 +182,9 @@ export default {
     },
     async deleteUser(id, index) {
       try {
-        const response = await axios.put(`users/delete/${id}`);
+        const response = await axios.put(`users/delete/${id}`,{
+          withCredentials: true
+        });
         if (response.data === 'OK') {
           this.users.splice(index, 1);
           this.dialogs.splice(index, 1);

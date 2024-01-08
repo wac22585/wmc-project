@@ -2,10 +2,11 @@
     <label for="">Date of Birth</label>
     <InputField :border="border" id="dob" v-model="formattedDate" @click="openDatePicker" @focus="openDatePicker" readonly="true" class="inputfield" />
     <v-dialog width="300" class="date-picker" v-model="showDatePicker" :return-value.sync="dob" persistent>
-        <v-date-picker v-model="dob" :max="maxDate" @input="dateSelected">
+        <v-date-picker v-model="tempDate" :max="maxDate">
         <template v-slot:actions>
             <v-spacer></v-spacer>
             <v-btn text color="black" @click="closeDatePicker">Close</v-btn>
+            <v-btn text color="black" @click="dateSelected">Save</v-btn>
         </template>
         </v-date-picker>
     </v-dialog>
@@ -13,7 +14,6 @@
 
 <script setup>
     import InputField from '@/components/Input.vue';
-import { ref } from 'vue';
 </script>
 
 <script>
@@ -34,12 +34,14 @@ import { ref } from 'vue';
         data() {
             return {
                 showDatePicker: false,
-                dob: this.defaultDate
+                dob: this.defaultDate,
+                tempDate: this.defaultDate,
             }
         },
         watch: {
             defaultDate(newVal) {
                 this.dob = newVal;
+                this.tempDate = newVal;
             }
         },
         computed: {
@@ -52,10 +54,10 @@ import { ref } from 'vue';
                 var mm = today.getMonth()+1; 
                 var yyyy = today.getFullYear();
                 today = yyyy + '-' + mm + '-' + dd;
-                console.log(today)
                 return today;
             }
         },
+        emits: ['update-date'],
         methods: {
             openDatePicker() {
                 this.showDatePicker = true;
@@ -63,6 +65,12 @@ import { ref } from 'vue';
             closeDatePicker() {
                 this.showDatePicker = false;
             },
+            dateSelected() {
+                this.dob = this.tempDate;
+                console.log('Selected Date', this.dob);
+                this.closeDatePicker();
+                this.$emit('update-date', this.dob);
+            }
         }
     }
 </script>
