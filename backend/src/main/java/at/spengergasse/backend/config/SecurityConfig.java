@@ -31,14 +31,19 @@ public class SecurityConfig {
     public UserDetailsService userDetailsService() { return new UserDetailsServiceImpl(); }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .authorizeHttpRequests((requests) -> requests
-                                .requestMatchers("/css/**", "/js/**", "/assets/**", "/", "/api/users/validateToken", "/api/users/login", "/api/users/logout").permitAll()
-                                .requestMatchers("/account").authenticated()
-                                .requestMatchers("api/users/all", "/add", "/edit", "/home").hasRole("ADMINISTRATOR")
-                        .anyRequest().permitAll()
-                )
+                //.csrf(csrf -> csrf.disable())
+                //https://docs.spring.io/spring-security/reference/servlet/authorization/authorize-http-requests.html
+                .authorizeHttpRequests((authorize) -> {
+                    authorize.requestMatchers("/api/users/all", "/add", "/edit", "/home").hasAuthority("ADMINISTRATOR");
+                    authorize.requestMatchers("/css/**", "/js/**", "/assets/**", "/", "/api/users/validateToken", "/api/users/login", "/api/users/logout", "/api/roles/all").permitAll();
+                    authorize.requestMatchers("/account").authenticated();
+                    authorize.anyRequest().authenticated();
+                })
+                .csrf(csrf -> {
+                    csrf.ignoringRequestMatchers("/api/users/all", "/add", "/edit", "/home");
+                })
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(new CookieAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);

@@ -1,14 +1,21 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import axios from 'axios';
 
-const isAuthenticated = async  () => {
+const getUserAuthStatus  = async  () => {
   try {
     const response = await axios.get("/users/validateToken", {
       withCredentials: true
     });
-    return response.status === 200;
+    const isAdmin = response.data.isAdmin;
+    return {
+      isAuthenticated: response.status === 200,
+      isAdmin: isAdmin
+    };
   } catch (error) {
-    return false;
+    return {
+      isAuthenticated: false,
+      isAdmin: false
+    };
   }
 }
 
@@ -64,13 +71,17 @@ const router = createRouter({
 
 router.beforeEach(async (to, from, next) => {
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
+  const userAuthStatus = await getUserAuthStatus();
 
   if (requiresAuth) {
-    const authStatus = await isAuthenticated();
-    if (!authStatus) {
+    if (!userAuthStatus.isAuthenticated) {
       next({ name: 'Login' });
     } else {
-      next();
+      if (userAuthStatus.isAdmin || to.path === '/account') {
+        next();
+      } else {
+        next({ name: 'Account' });
+      }
     }
   } else {
     next();

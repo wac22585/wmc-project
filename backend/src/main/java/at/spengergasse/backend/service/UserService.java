@@ -4,6 +4,7 @@ import at.spengergasse.backend.dto.UserDTO;
 import at.spengergasse.backend.model.User;
 import at.spengergasse.backend.model.Role;
 import at.spengergasse.backend.model.UserRole;
+import at.spengergasse.backend.model.UserRoleId;
 import at.spengergasse.backend.persistence.UserRepository;
 import at.spengergasse.backend.persistence.RoleRepository;
 import at.spengergasse.backend.persistence.UserRoleRepository;
@@ -31,7 +32,7 @@ public class UserService {
     private PasswordEncoder passwordEncoder;
 
     public String createUser(String firstname, String lastname, String email, String rawPassword,
-                             long phoneNumber, Date birthdate, List<Long> roleIds) {
+                             String phoneNumber, Date birthdate, List<Long> roleIds) {
         if(firstname == null || firstname.isBlank() || lastname == null || lastname.isBlank() ||
                 email == null || email.isBlank() || rawPassword == null || rawPassword.isBlank() ||
                 roleIds.isEmpty()) {
@@ -47,7 +48,6 @@ public class UserService {
                 .created(LocalDateTime.now())
                 .isDeleted(false)
                 .birthdate(birthdate)
-                // Other fields as necessary
                 .build();
 
         userRepository.save(user);
@@ -56,6 +56,7 @@ public class UserService {
             Role role = roleRepository.findById(roleId);
             if(role != null) {
                 UserRole userRole = UserRole.builder()
+                        .id(new UserRoleId(user.getId(), roleId))
                         .user(user)
                         .role(role)
                         .build();

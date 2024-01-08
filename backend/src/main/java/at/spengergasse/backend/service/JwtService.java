@@ -12,8 +12,10 @@ import org.springframework.stereotype.Service;
 import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class JwtService {
@@ -51,17 +53,22 @@ public class JwtService {
 
     public Boolean validateToken(String token) {
         try {
-            return !isTokenExpired(token);
+            if (isTokenExpired(token)) {
+                return false;
+            }
+           return true;
         } catch (Exception e) {
-            // Log the exception or handle it as needed
             return false;
         }
     }
 
+    public List<String> extractRoles(String token) {
+        return extractClaim(token, claims -> claims.get("roles", List.class));
+    }
 
-
-    public String GenerateToken(String username){
+    public String GenerateToken(String username, List<String> roles){
         Map<String, Object> claims = new HashMap<>();
+        claims.put("roles", roles.stream().map(String::toUpperCase).collect(Collectors.toList()));
         return createToken(claims, username);
     }
 

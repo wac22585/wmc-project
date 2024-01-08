@@ -29,9 +29,10 @@ public class User
     private UUID id;
     private String firstname;
     private String lastname;
+    @Column(unique = true)
     private String email;
     private String passwordHash;
-    private long phoneNumber;
+    private String phoneNumber;
     private Date birthdate;
     private boolean isDeleted;
     private LocalDateTime created;

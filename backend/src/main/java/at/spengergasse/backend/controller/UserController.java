@@ -15,10 +15,10 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+
 
 @RestController
 @RequestMapping("/api/users")
@@ -56,7 +56,7 @@ public class UserController
         try {
             UserDTO userDTO = userService.login(email, password);
             if (userDTO != null) {
-                String jwtToken = jwtService.GenerateToken(email);
+                String jwtToken = jwtService.GenerateToken(email, userDTO.roles());
                 ResponseCookie jwtCookie = ResponseCookie.from("accessToken", jwtToken)
                         .httpOnly(true)
                         .secure(true)
@@ -75,7 +75,7 @@ public class UserController
         }
     }
 
-    @PutMapping("/logout")
+    @GetMapping("/logout")
     public ResponseEntity<?> logout(HttpServletResponse response) {
         ResponseCookie jwtCookie = ResponseCookie.from("accessToken", null)
                 .httpOnly(true)
@@ -92,7 +92,7 @@ public class UserController
                                         @RequestParam("lastname") String lastname,
                                         @RequestParam("email") String email,
                                         @RequestParam("password") String password,
-                                        @RequestParam("number") long phoneNumber,
+                                        @RequestParam("number") String phoneNumber,
                                         @RequestParam(value = "birthdate", required = false) Date birthdate,
                                         @RequestParam(value = "roles") List<Long> roleIds)
     {
@@ -180,12 +180,19 @@ public class UserController
 
        try {
             if(jwtService.validateToken(jwtToken)) {
-                return ResponseEntity.ok().build();
+                List<String> roles = jwtService.extractRoles(jwtToken);
+                boolean isAdmin = roles.contains("ADMINISTRATOR");
+                Map<String, Object> response = new HashMap<>();
+                response.put("isAdmin", isAdmin);
+                return ResponseEntity.ok(response);
             } else {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body("Error: JWT token is invalid or expired.");
+
             }
        } catch(Exception e) {
-           return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+            .body("Error: An exception occurred during token validation.");
        }
     }
 }

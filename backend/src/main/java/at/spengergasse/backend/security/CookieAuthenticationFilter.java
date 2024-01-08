@@ -50,9 +50,8 @@ public class CookieAuthenticationFilter extends OncePerRequestFilter {
         }
         if(jwtService != null) {
             email = jwtService.extractEmail(token);
-            logger.info(email);
             if(email != null){
-                UserDetails userDetails = userDetailsServiceImpl.loadUserByUsername(email); //should be loadUserByEmail
+                UserDetails userDetails = userDetailsServiceImpl.loadUserByUsername(email);
                 if(jwtService.validateToken(token)){
                     UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                     authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

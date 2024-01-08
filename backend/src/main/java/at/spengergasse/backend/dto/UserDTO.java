@@ -6,5 +6,5 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-public record UserDTO(UUID id, String email, long phoneNumber, String firstname,
+public record UserDTO(UUID id, String email, String phoneNumber, String firstname,
                       String lastname, LocalDateTime created, Date birthdate, List<String> roles) { }

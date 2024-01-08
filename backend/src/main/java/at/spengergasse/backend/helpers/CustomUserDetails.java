@@ -21,7 +21,7 @@ public class CustomUserDetails extends User implements UserDetails {
         List<GrantedAuthority> auths = new ArrayList<>();
 
         for(String role : byEmail.getRoles()) {
-            auths.add(new SimpleGrantedAuthority("ROLE_" + role.toUpperCase()));
+            auths.add(new SimpleGrantedAuthority(role.toUpperCase()));
         }
         this.authorities = auths;
     }
@@ -59,5 +59,14 @@ public class CustomUserDetails extends User implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    @Override
+    public String toString() {
+        return "CustomUserDetails{" +
+                "email='" + email + '\'' +
+                ", passwordHash='" + (password != null ? "[PROTECTED]" : "null") + '\'' +
+                ", authorities=" + authorities +
+                '}';
     }
 }

@@ -10,7 +10,6 @@ import java.util.List;
 @Entity
 @Getter
 @Builder
-@ToString
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "roles")
@@ -18,7 +17,15 @@ public class Role extends AbstractPersistable<Long>
 {
     @Enumerated(EnumType.STRING)
     private ERoles name;
-    @OneToMany(mappedBy = "role")
+    @OneToMany(mappedBy = "role", fetch = FetchType.EAGER)
     @JsonIgnore
     private List<UserRole> userRoles;
+
+    @Override
+    public String toString() {
+        return "Role{" +
+                "id=" + getId() +
+                ", name=" + name +
+                '}';
+    }
 }

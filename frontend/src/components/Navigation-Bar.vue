@@ -57,7 +57,7 @@
           },
           async logout() {
             try {
-              const response = await axios.put('/users/logout', null, {
+              const response = await axios.get('/users/logout', null, {
                 withCredentials: true
               });
 
