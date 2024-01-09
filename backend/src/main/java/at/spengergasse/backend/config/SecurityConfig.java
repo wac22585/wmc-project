@@ -33,11 +33,9 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                //.csrf(csrf -> csrf.disable())
-                //https://docs.spring.io/spring-security/reference/servlet/authorization/authorize-http-requests.html
                 .authorizeHttpRequests((authorize) -> {
                     authorize.requestMatchers("/api/users/all", "/add", "/edit", "/home").hasAuthority("ADMINISTRATOR");
-                    authorize.requestMatchers("/css/**", "/js/**", "/assets/**", "/", "/api/users/validateToken", "/api/users/login", "/api/users/logout", "/api/roles/all").permitAll();
+                    authorize.requestMatchers("/css/**", "/js/**", "/assets/**", "/", "/api/users/validateToken", "/api/users/login", "/api/users/logout", "/api/roles/all", "/*.html").permitAll();
                     authorize.requestMatchers("/account").authenticated();
                     authorize.anyRequest().authenticated();
                 })
