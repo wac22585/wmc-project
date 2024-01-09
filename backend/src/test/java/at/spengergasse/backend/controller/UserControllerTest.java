@@ -3,6 +3,7 @@ package at.spengergasse.backend.controller;
 import at.spengergasse.backend.model.Role;
 import at.spengergasse.backend.model.User;
 import at.spengergasse.backend.model.UserRole;
+import at.spengergasse.backend.model.UserRoleId;
 import at.spengergasse.backend.persistence.RoleRepository;
 import at.spengergasse.backend.persistence.UserRepository;
 import at.spengergasse.backend.persistence.UserRoleRepository;
@@ -40,13 +41,13 @@ class UserControllerTest {
                 .lastname("Mustermann")
                 .email("max@gmail.com")
                 .passwordHash(passwordEncoder.encode("password"))
-                .phoneNumber(0)
+                .phoneNumber("0")
                 .created(LocalDateTime.now())
                 .isDeleted(false)
                 .birthdate(null)
                 .build();
 
-        List<Long> roleIds = List.of(2L, 3L);
+        List<Long> roleIds = List.of(1L, 3L);
 
         userRepository.save(user);
 
@@ -54,6 +55,7 @@ class UserControllerTest {
             Role role = roleRepository.findById(roleId);
             if(role != null) {
                 UserRole userRole = UserRole.builder()
+                        .id(new UserRoleId(user.getId(), roleId))
                         .user(user)
                         .role(role)
                         .build();
