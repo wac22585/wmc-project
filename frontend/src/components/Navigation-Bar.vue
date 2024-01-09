@@ -5,16 +5,17 @@
       <v-navigation-drawer width="200" v-model="drawer">
         <v-btn class="close-btn" v-if="isSmallScreen" @click="toggleDrawer" variant="plain" icon="mdi-close" :ripple="false" /> 
         <v-list-item class="nav-item first-item">
+          <router-link class="router-link" v-bind:to="`/account`">
+            <v-btn prepend-icon="mdi-cog" :ripple="false" variant="text" size="large"><span class="font-weight-bold">ACCOUNT</span></v-btn>
+          </router-link>
+          
+        </v-list-item>
+        <v-list-item v-if="isAdmin" class="nav-item">
           <router-link class="router-link" v-bind:to="`/home`">
             <v-btn prepend-icon="mdi-account-multiple" :ripple="false" variant="text" size="large"><span class="font-weight-bold">USERS</span></v-btn>
           </router-link>
         </v-list-item>
-        <v-list-item  class="nav-item">
-          <router-link class="router-link" v-bind:to="`/account`">
-            <v-btn prepend-icon="mdi-cog" :ripple="false" variant="text" size="large"><span class="font-weight-bold">ACCOUNT</span></v-btn>
-          </router-link>
-        </v-list-item>
-        <v-list-item class="nav-item">
+        <v-list-item v-if="isAdmin" class="nav-item">
           <router-link class="router-link" v-bind:to="`/add`">
             <v-btn prepend-icon="mdi-plus" :ripple="false" variant="text" size="large"><span class="font-weight-bold">ADD USER</span></v-btn>
           </router-link>
@@ -37,12 +38,27 @@
                 drawer: true,
                 isSmallScreen: false,
                 marginWidth: '70px',
+                isAdmin: false,
             }
         },
-        mounted() {
-            this.checkScreenSize();
-            window.addEventListener('resize', this.checkScreenSize)
-            if(this.isSmallScreen) this.drawer = false;
+        async mounted() {
+          this.checkScreenSize();
+          window.addEventListener('resize', this.checkScreenSize)
+          if(this.isSmallScreen) this.drawer = false;
+          try {
+            console.log(localStorage.getItem('id'))
+              const response = await axios.get(`users/get/${localStorage.getItem('id')}`);
+              if(response.status == 200) {
+                  if(response.data.roles.includes('ADMINISTRATOR')) this.isAdmin = true;
+              }
+              else {
+                  alert(error)
+                  console.log(error)
+              }
+          } catch(error) {
+              alert(error)
+              console.log(error)
+          }
         },
         beforeDestroy() {
             window.removeEventListener('resize', this.checkScreenSize);
@@ -99,6 +115,7 @@
     .logout {
         position: fixed !important;
         bottom: 40px !important;
+        z-index: 10;
     }
 
     .router-link {

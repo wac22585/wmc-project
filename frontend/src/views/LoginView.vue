@@ -52,7 +52,7 @@
                 this.invalidLogin = '';
                 const email = this.email;
                 const password = this.password;
-
+                document.cookie = 'accessToken' + '=;expires=Thu, 01 Jan 1970 00:00:01 GMT;';
                 const response = await axios.get('/users/login', {
                     params: {
                         email: email,
@@ -61,6 +61,7 @@
                     withCredentials: true
                 });
                 if(response.status === 200) {
+                    localStorage.setItem('id', response.data.id);
                    this.$router.push({name: 'Home'});
                 } else {
                     alert('Login failed. Please check your credentials');

@@ -11,7 +11,7 @@
         <label for="">Phone-Number</label>
         <v-text-field :rules="[rules.required, rules.phoneNumber]" append-inner-icon="mdi-pencil" v-model="user.phoneNumber" variant="underlined"></v-text-field>
 
-        <label for="">Roles</label>
+        <label for="" v-if="!isAccount">Roles</label>
         <v-select
             :rules="[rules.required, rules.roles]"
             :items="roles"
@@ -21,6 +21,7 @@
             bg-color="none"
             variant="underlined"
             multiple
+            v-if="!isAccount"
         >
             <template v-slot:selection="{item, index}">
                 <v-chip v-if="index < 2">
@@ -37,7 +38,7 @@
         <DatePicker :defaultDate="computedDefaultDate" :border="true"/>
 
         <div class="btn-div">
-            <Button :useWhiteBackground="true" label="Delete"  @click="deleteUser"/>
+            <Button v-if="!isAccount" :useWhiteBackground="true" label="Delete"  @click="deleteUser"/>
             <Button label="Save" @click="save"/>
         </div>
     </v-form>
@@ -55,7 +56,7 @@
             return {
                 roles: [],
                 user: {},
-                id: this.$route.params.id,
+                id: this.$route.params.id || null,
                 selectedRoles: [],
                 rules: {
                     required: value => !!value || 'Required.',
@@ -70,6 +71,7 @@
                     },
                     roles: value => this.selectedRoles.length > 0 || 'At least one role must be selected.',
                 },
+                isAccount: false,
             }
         },
         computed: {
@@ -84,6 +86,10 @@
                 alert(error);
             }
             try {
+                if(this.id == null) {
+                    this.id = localStorage.getItem('id');
+                    this.isAccount = true;
+                }
                 const response = await axios.get(`users/get/${this.id}`);
                 if(response.status == 200) {
                     this.user = response.data;
@@ -126,10 +132,10 @@
                 if (this.validateField(user.firstname, [rules.required, rules.counter]) !== true ||
                 this.validateField(user.lastname, [rules.required, rules.counter]) !== true ||
                 this.validateField(user.email, [rules.required, rules.email]) !== true ||
-                this.validateField(user.phoneNumber, [rules.required, rules.phoneNumber]) !== true ||
-                this.validateField(this.selectedRoles, [rules.required, rules.roles]) !== true) {
+                this.validateField(user.phoneNumber, [rules.required, rules.phoneNumber]) !== true) {
                 return;
                 }
+                if(!this.isAccount && this.validateField(this.selectedRoles, [rules.required, rules.roles]) !== true) return;
 
                 try {  
                     const response = await axios.put(`users/update/${this.id}`, this.user);
