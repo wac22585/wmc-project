@@ -29,7 +29,6 @@ public class UserDetailsServiceImpl implements UserDetailsService {
             logger.error("Email not found: " + email);
             throw new UsernameNotFoundException("could not found user..!!");
         }
-        logger.info("User Authenticated Successfully!!!");
         return new CustomUserDetails(user);
     }
 }

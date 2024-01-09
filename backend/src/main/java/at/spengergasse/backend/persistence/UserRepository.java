@@ -12,5 +12,4 @@ public interface UserRepository extends Repository<User, UUID>
     User findById(UUID id);
     User findByEmail(String email);
     List<User> findAll();
-    User findByAuthToken(String authToken);
 }

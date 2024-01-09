@@ -17,9 +17,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
 
 @Component
 public class CookieAuthenticationFilter extends OncePerRequestFilter {
@@ -33,7 +30,7 @@ public class CookieAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String token = null;
-        String email = null;
+        String username = null;
 
         if(request.getCookies() != null){
             for(Cookie cookie: request.getCookies()){
@@ -49,9 +46,9 @@ public class CookieAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
         if(jwtService != null) {
-            email = jwtService.extractEmail(token);
-            if(email != null){
-                UserDetails userDetails = userDetailsServiceImpl.loadUserByUsername(email);
+            username = jwtService.extractUsername(token);
+            if(username != null){
+                UserDetails userDetails = userDetailsServiceImpl.loadUserByUsername(username);
                 if(jwtService.validateToken(token)){
                     UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                     authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

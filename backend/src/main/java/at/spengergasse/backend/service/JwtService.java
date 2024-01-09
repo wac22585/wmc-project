@@ -25,7 +25,7 @@ public class JwtService {
     @Value("${jwt.cookieExpiry}")
     private int cookieExpiry;
 
-    public String extractEmail(String token) {
+    public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
 
