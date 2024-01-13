@@ -167,21 +167,24 @@ import { setTransitionHooks } from 'vue';
 
                     } else if(this.password != this.confirmpassword) {
                         this.invalidInput = 'Password mismatch.';
-                    } else if(pattern.test(user.phoneNumber))
-                        this.invalidInput = 'Invalide phone-number'
+                    }/* else if(pattern.test(user.phoneNumber))
+                        this.invalidInput = 'Invalide phone-number'*/
                     else {
                         const formData = new URLSearchParams();
 
                         formData.append('firstname', user.firstname.charAt(0).toUpperCase() + user.firstname.slice(1));
                         formData.append('lastname', user.lastname.charAt(0).toUpperCase() + user.lastname.slice(1));
                         formData.append('email', user.email);
-                        formData.append('password', this.password);
-                        formData.append('number', user.phoneNumber);
+                        formData.append('passwordHash', this.password);
+                        formData.append('phoneNumber', 12345678);
 
                         if(this.dob != new Date()) 
                             formData.append('birthdate', this.dob);
-                        console.log(this.dob);
+                        console.log(this.selectedRoles)
                         formData.append('roles', this.selectedRoles);
+                        const priviledgeValue = this.selectedRoles.includes(1) ? [1] : [2];
+                        formData.append('priviledgeRoles', priviledgeValue);
+
                         const response = await axios.post('users/add', formData, {
                             withCredentials: true
                         });
@@ -204,7 +207,6 @@ import { setTransitionHooks } from 'vue';
 </script>
 
 <style scoped>
-    .title {
         margin-top: 10px;
         color: black;
         font-size: 30px;

@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import axios from 'axios';
 
 const getUserAuthStatus  = async  () => {
-  try {
+  /*try {
     const response = await axios.get("/users/validateToken", {
       withCredentials: true
     });
@@ -10,13 +10,17 @@ const getUserAuthStatus  = async  () => {
     return {
       isAuthenticated: response.status === 200,
       isAdmin: isAdmin
+    };*/
+    return {
+      isAuthenticated: true,
+      isAdmin: true,
     };
-  } catch (error) {
+  /*} catch (error) {
     return {
       isAuthenticated: false,
       isAdmin: false
     };
-  }
+  }*/
 }
 
 const routes = [

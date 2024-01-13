@@ -47,20 +47,19 @@
           if(this.isSmallScreen) this.drawer = false;
           try {
             console.log(localStorage.getItem('id'))
-              const response = await axios.get(`users/get/${localStorage.getItem('id')}`);
+              const response = await axios.get(`users/get/${localStorage.getItem('email')}`);
               if(response.status == 200) {
                   if(response.data.roles.includes('ADMINISTRATOR')) this.isAdmin = true;
               }
               else {
-                  alert(error)
-                  console.log(error)
+                console.log("An error occured")
               }
           } catch(error) {
               alert(error)
               console.log(error)
           }
         },
-        beforeDestroy() {
+        beforeUnmount() {
             window.removeEventListener('resize', this.checkScreenSize);
         },
         methods: {
@@ -73,7 +72,7 @@
           },
           async logout() {
             try {
-              const response = await axios.get('/users/logout', null, {
+              const response = await axios.delete('/auth/logout', {
                 withCredentials: true
               });
 

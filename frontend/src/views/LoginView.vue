@@ -52,16 +52,18 @@
                 this.invalidLogin = '';
                 const email = this.email;
                 const password = this.password;
-                document.cookie = 'accessToken' + '=;expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-                const response = await axios.get('/users/login', {
-                    params: {
-                        email: email,
-                        password: encodeURIComponent(password)
+                console.log(email, password);
+                const response = await axios.post('https://localhost:8443/api/auth/login', {
+                    username: email,
+                    password: password
+                }, {
+                    headers: {
+                        'Content-Type': 'application/json'
                     },
                     withCredentials: true
                 });
                 if(response.status === 200) {
-                    localStorage.setItem('id', response.data.id);
+                    localStorage.setItem('email', response.data.email);
                    this.$router.push({name: 'Home'});
                 } else {
                     alert('Login failed. Please check your credentials');
