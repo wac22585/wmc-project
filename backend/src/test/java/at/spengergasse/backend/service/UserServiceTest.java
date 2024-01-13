@@ -1,9 +1,6 @@
 package at.spengergasse.backend.service;
 
-import at.spengergasse.backend.model.Role;
-import at.spengergasse.backend.model.User;
-import at.spengergasse.backend.model.UserRole;
-import at.spengergasse.backend.model.UserRoleId;
+import at.spengergasse.backend.model.*;
 import at.spengergasse.backend.persistence.RoleRepository;
 import at.spengergasse.backend.persistence.UserRepository;
 import at.spengergasse.backend.persistence.UserRoleRepository;
@@ -14,6 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -40,6 +38,7 @@ class UserServiceTest {
                 .created(LocalDateTime.now())
                 .isDeleted(false)
                 .birthdate(null)
+                .priviledgeRoles(Set.of((new PriviledgeRole(1, "ADMIN"))))
                 .build();
 
         userRepository.save(user);
@@ -50,7 +49,7 @@ class UserServiceTest {
             if(role != null) {
                 UserRoleId userRoleId = new UserRoleId(user.getId(), roleId);
                 UserRole userRole = UserRole.builder()
-
+                        .id(new UserRoleId(user.getId(), roleId))
                         .user(user)
                         .role(role)
                         .build();

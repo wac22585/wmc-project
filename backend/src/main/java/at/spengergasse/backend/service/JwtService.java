@@ -6,24 +6,22 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
-@Service
+@Component
 public class JwtService {
-
-    public static final String SECRET = "357638792F423F4428472B4B6250655368566D597133743677397A2443264629";
 
     @Value("${jwt.cookieExpiry}")
     private int cookieExpiry;
+
+    public static final String SECRET = "357638792F423F4428472B4B6250655368566D597133743677397A2443264629";
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
@@ -51,24 +49,15 @@ public class JwtService {
         return extractExpiration(token).before(new Date());
     }
 
-    public Boolean validateToken(String token) {
-        try {
-            if (isTokenExpired(token)) {
-                return false;
-            }
-           return true;
-        } catch (Exception e) {
-            return false;
-        }
+    public Boolean validateToken(String token, UserDetails userDetails) {
+        final String username = extractUsername(token);
+        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
 
-    public List<String> extractRoles(String token) {
-        return extractClaim(token, claims -> claims.get("roles", List.class));
-    }
 
-    public String GenerateToken(String username, List<String> roles){
+
+    public String GenerateToken(String username){
         Map<String, Object> claims = new HashMap<>();
-        claims.put("roles", roles.stream().map(String::toUpperCase).collect(Collectors.toList()));
         return createToken(claims, username);
     }
 

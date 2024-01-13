@@ -1,45 +1,42 @@
 package at.spengergasse.backend.controller;
 
 import at.spengergasse.backend.dto.UserDTO;
+import at.spengergasse.backend.dto.UserRequest;
 import at.spengergasse.backend.model.*;
-import at.spengergasse.backend.persistence.RoleRepository;
 import at.spengergasse.backend.persistence.UserRepository;
-import at.spengergasse.backend.persistence.UserRoleRepository;
 import at.spengergasse.backend.service.JwtService;
+import at.spengergasse.backend.service.RefreshTokenService;
 import at.spengergasse.backend.service.UserService;
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
-import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
 
 @RestController
 @RequestMapping("/api/users")
-@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
-public class UserController
-{
-    @Autowired
-    private UserRepository userRepository;
+public class UserController {
 
     @Autowired
-    private RoleRepository roleRepository;
+    UserRepository userRepository;
 
     @Autowired
-    private UserRoleRepository userRoleRepository;
+    UserService userService;
 
     @Autowired
     private JwtService jwtService;
 
     @Autowired
-    private UserService userService;
+    RefreshTokenService refreshTokenService;
+
+
+    @Autowired
+    private AuthenticationManager authenticationManager;
 
     @GetMapping("/all")
     public @ResponseBody Iterable<UserDTO> allUsers() {
@@ -47,62 +44,20 @@ public class UserController
         return users.stream()
                 .filter(u -> !u.isDeleted())
                 .map(user -> new UserDTO(user.getId(), user.getEmail(), user.getPhoneNumber(), user.getFirstname(), user.getLastname(),
-                        user.getCreated(), user.getBirthdate(), user.getRoles()))
+                        user.getCreated(), user.getBirthdate(), user.getRolesString()))
                 .collect(Collectors.toList());
     }
 
-    @GetMapping("/login")
-    public ResponseEntity<?> login(@RequestParam("email") String email, @RequestParam("password") String password, HttpServletResponse response)
-    {
-        try {
-            UserDTO userDTO = userService.login(email, password);
-            if (userDTO != null) {
-                String jwtToken = jwtService.GenerateToken(email, userDTO.roles());
-                ResponseCookie jwtCookie = ResponseCookie.from("accessToken", jwtToken)
-                        .httpOnly(true)
-                        .secure(true)
-                        .path("/")
-                        .maxAge(86400)
-                        .build();
-
-                response.addHeader("Set-Cookie", jwtCookie.toString());
-                return ResponseEntity.ok(userDTO);
-            } else {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password.");
-            }
-        } catch(Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password.");
-        }
-    }
-
-    @GetMapping("/logout")
-    public ResponseEntity<?> logout(HttpServletResponse response) {
-        ResponseCookie jwtCookie = ResponseCookie.from("accessToken", null)
-                .httpOnly(true)
-                .secure(true)
-                .path("/")
-                .maxAge(0)
-                .build();
-        response.addHeader("Set-Cookie", jwtCookie.toString());
-        return ResponseEntity.ok("Logout successful");
-    }
-
     @PostMapping("/add")
-    public ResponseEntity<?> createUser(@RequestParam("firstname") String firstname,
-                                        @RequestParam("lastname") String lastname,
-                                        @RequestParam("email") String email,
-                                        @RequestParam("password") String password,
-                                        @RequestParam("number") String phoneNumber,
-                                        @RequestParam(value = "birthdate", required = false) Date birthdate,
-                                        @RequestParam(value = "roles") List<Long> roleIds)
+    public ResponseEntity<?> createUser(@ModelAttribute UserRequest userRequest)
     {
         try {
-            String result = userService.createUser(firstname, lastname, email, password, phoneNumber, birthdate, roleIds);
-            return ResponseEntity.ok(result);
+            userService.saveUser(userRequest);
+            return ResponseEntity.ok("Added user");
         } catch(IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch(Exception e) {
+            System.out.println(e);
             return ResponseEntity.badRequest().body("User could not be added. Please try again.");
         }
     }
@@ -152,7 +107,7 @@ public class UserController
             try
             {
                 user.setIsDeleted(true);
-                user.setDeleted(LocalDateTime.now());
+                //user.setDeleted(LocalDateTime.now());
                 userRepository.save(user);
                 return new ResponseEntity("OK", HttpStatusCode.valueOf(200));
             } catch (Exception e)
@@ -163,37 +118,16 @@ public class UserController
         return new ResponseEntity("User could not be found. Please try again.", HttpStatus.NOT_FOUND);
     }
 
-    @GetMapping("get/{id}")
-    public ResponseEntity<UserDTO> get(@PathVariable final UUID id) {
-        User user = userRepository.findById(id);
+    @GetMapping("get/{email}")
+    public ResponseEntity<UserDTO> get(@PathVariable final String email) {
+        User user = userRepository.findByEmail(email);
         if(user != null) {
-            UserDTO userDTO = new UserDTO(user.getId(), user.getEmail(), user.getPhoneNumber(), user.getFirstname(), user.getLastname(), user.getCreated(), user.getBirthdate(), user.getRoles());
+            UserDTO userDTO = new UserDTO(user.getId(), user.getEmail(),
+                    user.getPhoneNumber(), user.getFirstname(), user.getLastname(),
+                    user.getCreated(), user.getBirthdate(), user.getRolesString());
             return new ResponseEntity<>(userDTO, HttpStatus.OK);
         }
         return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
     }
 
-    @GetMapping("/validateToken")
-    public ResponseEntity<?> validateToken(@CookieValue(name = "accessToken", required = false) String jwtToken) {
-       if(jwtToken == null || jwtToken.isEmpty()) {
-           return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-       }
-
-       try {
-            if(jwtService.validateToken(jwtToken)) {
-                List<String> roles = jwtService.extractRoles(jwtToken);
-                boolean isAdmin = roles.contains("ADMINISTRATOR");
-                Map<String, Object> response = new HashMap<>();
-                response.put("isAdmin", isAdmin);
-                return ResponseEntity.ok(response);
-            } else {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body("Error: JWT token is invalid or expired.");
-
-            }
-       } catch(Exception e) {
-             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-            .body("Error: An exception occurred during token validation.");
-       }
-    }
 }

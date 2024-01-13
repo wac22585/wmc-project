@@ -1,9 +1,11 @@
 package at.spengergasse.backend.helpers;
 
+import at.spengergasse.backend.model.PriviledgeRole;
 import at.spengergasse.backend.model.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import at.spengergasse.backend.model.UserRole;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -17,11 +19,12 @@ public class CustomUserDetails extends User implements UserDetails {
 
     public CustomUserDetails(User byUsername) {
         this.username = byUsername.getEmail();
-        this.password = byUsername.getPasswordHash();
+        this.password= byUsername.getPasswordHash();
         List<GrantedAuthority> auths = new ArrayList<>();
 
-        for(String role : byUsername.getRoles()) {
-            auths.add(new SimpleGrantedAuthority("ROLE_" + role.toUpperCase()));
+        for(PriviledgeRole role : byUsername.getPriviledgeRoles()){
+
+            auths.add(new SimpleGrantedAuthority(role.getName().toUpperCase()));
         }
         this.authorities = auths;
     }
@@ -59,14 +62,5 @@ public class CustomUserDetails extends User implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
-    }
-
-    @Override
-    public String toString() {
-        return "CustomUserDetails{" +
-                "email='" + username + '\'' +
-                ", passwordHash='" + (password != null ? "[PROTECTED]" : "null") + '\'' +
-                ", authorities=" + authorities +
-                '}';
     }
 }

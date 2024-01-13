@@ -1,8 +1,8 @@
 package at.spengergasse.backend.config;
 
-import at.spengergasse.backend.model.ERoles;
-import at.spengergasse.backend.security.CookieAuthenticationFilter;
-import at.spengergasse.backend.service.UserDetailsServiceImpl;
+import at.spengergasse.backend.helpers.UserDetailsServiceImpl;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -20,35 +20,44 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-
-@EnableWebSecurity
 @Configuration
+@EnableWebSecurity
+@RequiredArgsConstructor
+@EnableMethodSecurity
 public class SecurityConfig {
 
+    @Autowired
+    JwtAuthFilter jwtAuthFilter;
+
     @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+    public UserDetailsService userDetailsService(){
+        return new UserDetailsServiceImpl();
     }
 
     @Bean
-    public UserDetailsService userDetailsService() { return new UserDetailsServiceImpl(); }
-
-    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .csrf(AbstractHttpConfigurer::disable)
+        return http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests((authorize) -> {
-                    authorize.requestMatchers("/api/users/all", "/add", "/edit/**", "/home").hasRole(ERoles.ADMINISTRATOR.name());
-                    authorize.requestMatchers("/css/**", "/js/**", "/assets/**", "/",
-                            "/api/users/validateToken", "/api/users/login", "/api/users/logout", "/api/roles/all", "/api/users/update/**","/api/users/get/**",
+
+                    authorize.requestMatchers("/api/auth/login", "api/auth/refreshToken",
+                            "/css/**", "/js/**", "/assets/**", "/",
                             "/*.html", "/logo.png").permitAll();
-                    authorize.requestMatchers("/account").authenticated();
+
+                    authorize.requestMatchers("/api/users/all", "/api/users/delete/**",
+                            "/home", "/add", "/edit/**").hasAuthority("ADMIN");
+
+                    authorize.requestMatchers("/api/roles/all", "/api/users/update/**","/api/users/get/**").authenticated();
+
                     authorize.anyRequest().authenticated();
                 })
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())
-                .addFilterBefore(new CookieAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
-        return http.build();
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class).build();
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder(){
+        return new BCryptPasswordEncoder();
     }
 
     @Bean

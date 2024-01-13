@@ -1,9 +1,7 @@
-package at.spengergasse.backend.service;
+package at.spengergasse.backend.helpers;
 
-import at.spengergasse.backend.helpers.CustomUserDetails;
 import at.spengergasse.backend.model.User;
 import at.spengergasse.backend.persistence.UserRepository;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,14 +19,15 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     private static final Logger logger = LoggerFactory.getLogger(UserDetailsServiceImpl.class);
 
     @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
         logger.debug("Entering in loadUserByUsername Method...");
-        User user = userRepository.findByEmail(email);
+        User user = userRepository.findByEmail(username);
         if(user == null){
-            logger.error("Email not found: " + email);
-            throw new UsernameNotFoundException("could not found user..!!");
+            logger.error("Username not found: " + username);
+            throw new UsernameNotFoundException("could not find user..!!");
         }
+        logger.info("User Authenticated Successfully..!!!");
         return new CustomUserDetails(user);
     }
 }
