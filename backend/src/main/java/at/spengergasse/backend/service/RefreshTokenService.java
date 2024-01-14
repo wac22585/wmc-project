@@ -21,12 +21,20 @@ public class RefreshTokenService {
     UserRepository userRepository;
 
     public RefreshToken createRefreshToken(String username){
-        RefreshToken refreshToken = RefreshToken.builder()
-                .user(userRepository.findByEmail(username))
-                .token(UUID.randomUUID().toString())
-                .expiryDate(Instant.now().plusMillis(600000))
-                .build();
-        return refreshTokenRepository.save(refreshToken);
+        User user = userRepository.findByEmail(username);
+        Optional<RefreshToken> existingToken = refreshTokenRepository.findByUser(user);
+        if (existingToken.isPresent()) {
+            RefreshToken refreshToken = existingToken.get();
+            refreshToken.setExpiryDate(Instant.now().plusMillis(600000));
+            return refreshTokenRepository.save(refreshToken);
+        } else {
+            RefreshToken refreshToken = RefreshToken.builder()
+                    .user(user)
+                    .token(UUID.randomUUID().toString())
+                    .expiryDate(Instant.now().plusMillis(600000))
+                    .build();
+            return refreshTokenRepository.save(refreshToken);
+        }
     }
 
     public Optional<RefreshToken> findByToken(String token){
@@ -41,8 +49,5 @@ public class RefreshTokenService {
         return token;
     }
 
-    public void deleteByUser(User user) {
-        refreshTokenRepository.deleteByUser(user);
-    }
 
 }
