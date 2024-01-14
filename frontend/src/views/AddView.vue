@@ -207,6 +207,7 @@ import { setTransitionHooks } from 'vue';
 </script>
 
 <style scoped>
+    .title {
         margin-top: 10px;
         color: black;
         font-size: 30px;

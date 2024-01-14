@@ -47,7 +47,7 @@
           if(this.isSmallScreen) this.drawer = false;
           try {
             console.log(localStorage.getItem('id'))
-              const response = await axios.get(`users/get/${localStorage.getItem('email')}`);
+              const response = await axios.get(`users/get/${localStorage.getItem('id')}`);
               if(response.status == 200) {
                   if(response.data.roles.includes('ADMINISTRATOR')) this.isAdmin = true;
               }
