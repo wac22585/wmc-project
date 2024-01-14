@@ -118,9 +118,9 @@ public class UserController {
         return new ResponseEntity("User could not be found. Please try again.", HttpStatus.NOT_FOUND);
     }
 
-    @GetMapping("get/{email}")
-    public ResponseEntity<UserDTO> get(@PathVariable final String email) {
-        User user = userRepository.findByEmail(email);
+    @GetMapping("get/{id}")
+    public ResponseEntity<UserDTO> get(@PathVariable final UUID id) {
+        User user = userRepository.findById(id);
         if(user != null) {
             UserDTO userDTO = new UserDTO(user.getId(), user.getEmail(),
                     user.getPhoneNumber(), user.getFirstname(), user.getLastname(),

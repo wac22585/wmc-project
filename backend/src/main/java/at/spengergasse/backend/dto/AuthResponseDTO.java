@@ -5,15 +5,12 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.UUID;
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class JwtResponseDTO {
+public class AuthResponseDTO {
 
-    private UUID id;
-    private String accessToken;
-    private String token;
+    private boolean isAuthenticated;
+    private boolean isAdmin;
 }

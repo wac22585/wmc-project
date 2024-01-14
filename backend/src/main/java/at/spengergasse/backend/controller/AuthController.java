@@ -1,10 +1,13 @@
 package at.spengergasse.backend.controller;
 
 import at.spengergasse.backend.dto.AuthRequestDTO;
+import at.spengergasse.backend.dto.AuthResponseDTO;
 import at.spengergasse.backend.dto.JwtResponseDTO;
 import at.spengergasse.backend.dto.RefreshTokenRequestDTO;
+import at.spengergasse.backend.model.PriviledgeRole;
 import at.spengergasse.backend.model.RefreshToken;
 import at.spengergasse.backend.model.User;
+import at.spengergasse.backend.persistence.PriviledgeRepository;
 import at.spengergasse.backend.persistence.UserRepository;
 import at.spengergasse.backend.service.JwtService;
 import at.spengergasse.backend.service.RefreshTokenService;
@@ -38,6 +41,9 @@ public class AuthController {
     private UserRepository userRepository;
 
     @Autowired
+    private PriviledgeRepository priviledgeRepository;
+
+    @Autowired
     RefreshTokenService refreshTokenService;
 
     @Autowired
@@ -55,6 +61,7 @@ public class AuthController {
     public JwtResponseDTO AuthenticateAndGetToken(@RequestBody AuthRequestDTO authRequestDTO, HttpServletResponse response){
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequestDTO.getUsername(), authRequestDTO.getPassword()));
         if(authentication.isAuthenticated()){
+            User user = userRepository.findByEmail(authRequestDTO.getUsername());
             RefreshToken refreshToken = refreshTokenService.createRefreshToken(authRequestDTO.getUsername());
             String accessToken = jwtService.GenerateToken(authRequestDTO.getUsername());
             ResponseCookie cookie = ResponseCookie.from("accessToken", accessToken)
@@ -65,10 +72,9 @@ public class AuthController {
                     .build();
             response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
             return JwtResponseDTO.builder()
-                    .email(authRequestDTO.getUsername())
+                    .id(user.getId())
                     .accessToken(accessToken)
                     .token(refreshToken.getToken()).build();
-
         } else {
             throw new UsernameNotFoundException("invalid user request..!!");
         }
@@ -77,7 +83,7 @@ public class AuthController {
     @Operation(summary = "Logout from the system")
     @ApiResponse(responseCode = "200", description = "Logged out successfully.")
     @DeleteMapping("/logout")
-    public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<?> logout(HttpServletResponse response) {
 
         /*String accessToken = null;
         Cookie[] cookies = request.getCookies();
@@ -121,4 +127,25 @@ public class AuthController {
                 }).orElseThrow(() ->new RuntimeException("Refresh Token is not in DB..!!"));
     }
 
+    @GetMapping("/status")
+    public AuthResponseDTO getAuthStatus(HttpServletRequest request) {
+        String accessToken = null;
+        Cookie[] cookies = request.getCookies();
+
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("accessToken".equals(cookie.getName())) {
+                    accessToken = cookie.getValue();
+                    break;
+                }
+            }
+        }
+        if (accessToken != null && !accessToken.isEmpty()) {
+            String email = jwtService.extractUsername(accessToken);
+            User user = userRepository.findByEmail(email);
+            PriviledgeRole role = priviledgeRepository.findById(1L);
+            return new AuthResponseDTO(true, user.getPriviledgeRoles().contains(role));
+        }
+        return new AuthResponseDTO(false, false);
+    }
 }

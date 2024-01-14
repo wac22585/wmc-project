@@ -49,6 +49,12 @@
         methods: {
         async login() {
             try {
+                document.cookie.split(";").forEach((c) => {
+                document.cookie = c
+                    .replace(/^ +/, "")
+                    .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+                });
+
                 this.invalidLogin = '';
                 const email = this.email;
                 const password = this.password;
@@ -60,10 +66,9 @@
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    withCredentials: true
                 });
                 if(response.status === 200) {
-                    localStorage.setItem('email', response.data.email);
+                    localStorage.setItem('id', response.data.id);
                    this.$router.push({name: 'Home'});
                 } else {
                     alert('Login failed. Please check your credentials');
