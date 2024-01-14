@@ -1,24 +1,31 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import axios from 'axios';
 
-const isAuthenticated = async  () => {
-  try {
-    const token = localStorage.getItem('authToken');
-    if(token == null) return false;
+const getUserAuthStatus  = async  () => {
+  /*try {
     const response = await axios.get("/users/validateToken", {
-      params: {
-        authToken: token
-      }
+      withCredentials: true
     });
-    return response.status === 200;
-  } catch (error) {
-    return false;
-  }
+    const isAdmin = response.data.isAdmin;
+    return {
+      isAuthenticated: response.status === 200,
+      isAdmin: isAdmin
+    };*/
+    return {
+      isAuthenticated: true,
+      isAdmin: true,
+    };
+  /*} catch (error) {
+    return {
+      isAuthenticated: false,
+      isAdmin: false
+    };
+  }*/
 }
 
 const routes = [
   {
-    path: '',
+    path: '/',
     name: 'Login',
     component: () => import('@/views/LoginView.vue'),
   },
@@ -68,13 +75,17 @@ const router = createRouter({
 
 router.beforeEach(async (to, from, next) => {
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
+  const userAuthStatus = await getUserAuthStatus();
 
   if (requiresAuth) {
-    const authStatus = await isAuthenticated();
-    if (!authStatus) {
+    if (!userAuthStatus.isAuthenticated) {
       next({ name: 'Login' });
     } else {
-      next();
+      if (userAuthStatus.isAdmin || to.path === '/account') {
+        next();
+      } else {
+        next({ name: 'Account' });
+      }
     }
   } else {
     next();

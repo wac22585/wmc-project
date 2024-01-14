@@ -52,28 +52,25 @@
                 this.invalidLogin = '';
                 const email = this.email;
                 const password = this.password;
-
-                const response = await axios.get('/users/login', {
-                    params: {
-                        email: email,
-                        password: encodeURIComponent(password)
-                    }
+                console.log(email, password);
+                const response = await axios.post('https://localhost:8443/api/auth/login', {
+                    username: email,
+                    password: password
+                }, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    withCredentials: true
                 });
-
-                if(response.status === 200 && response.data) {
-                    localStorage.setItem('authToken', response.data.token);
-                    this.$router.push({name: 'Home'});
+                if(response.status === 200) {
+                    localStorage.setItem('email', response.data.email);
+                   this.$router.push({name: 'Home'});
                 } else {
                     alert('Login failed. Please check your credentials');
                 }
             } catch (error) {
-                if(error.response) {
-                    if (error.response.status === 401) {
-                        this.invalidLogin = error.response.data;
-                    } else  {
-                        this.invalidLogin = error.response.data;
-                    }
-                }
+                console.log(error)
+                this.invalidLogin = error.response?.data || 'Login failed. Please try again.';
             }
         },
     },

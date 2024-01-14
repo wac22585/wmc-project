@@ -4,14 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
-import org.springframework.data.jpa.domain.AbstractPersistable;
-
-import org.mindrot.jbcrypt.BCrypt;
 
 import java.time.LocalDateTime;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Entity
@@ -29,30 +24,22 @@ public class User
     private UUID id;
     private String firstname;
     private String lastname;
+    @Column(unique = true)
     private String email;
     private String passwordHash;
-    private long phoneNumber;
+    private String phoneNumber;
     private Date birthdate;
     private boolean isDeleted;
     private LocalDateTime created;
-    private LocalDateTime deleted;
-    private String userImage;
-    private String authToken;
     @ManyToOne(cascade = CascadeType.PERSIST)
     private CountryNumber countryNumber;
-    @OneToMany(cascade = CascadeType.PERSIST, mappedBy = "user")
+    @OneToMany(cascade = CascadeType.PERSIST, mappedBy = "user", fetch = FetchType.EAGER)
     @JsonIgnore
     private List<UserRole> roles;
+    @ManyToMany(fetch = FetchType.EAGER)
+    private Set<PriviledgeRole> priviledgeRoles = new HashSet<>();
 
-    public void setPassword(String password) {
-        this.passwordHash = BCrypt.hashpw(password, BCrypt.gensalt());
-    }
-
-    public boolean verifyPassword(String password) {
-        return BCrypt.checkpw(password, this.passwordHash);
-    }
-
-    public List<String> getRoles()
+    public List<String> getRolesString()
     {
         return this.roles.stream()
                 .map(userRole -> userRole.getRole().getName().toString()).collect(Collectors.toList());

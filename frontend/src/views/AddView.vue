@@ -31,7 +31,7 @@
                     </v-col>
                     <v-col>
                         <label for="">Phone-Number</label>
-                        <InputField class="inputfield"></InputField>
+                        <InputField class="inputfield" v-model="user.phoneNumber"></InputField>
                     </v-col>
                 </v-row>
 
@@ -63,7 +63,7 @@
                         </v-select>
                     </v-col>
                     <v-col>
-                       <DatePicker />
+                       <DatePicker @update-date="handleDateUpdate" />
                     </v-col>
                 </v-row>
                 <v-row>
@@ -118,6 +118,7 @@ import { setTransitionHooks } from 'vue';
                 selectedRoles: [],
                 countries: [],
                 dial_code: 0,
+                dob: new Date(),
             }
         },
         async mounted() {
@@ -134,7 +135,7 @@ import { setTransitionHooks } from 'vue';
                 alert('An error occurred: ', error)
             }
 
-            try {
+            /*try {
                 const response = await axios.get('/countries/all');
                 this.countries = response.data;
                 for(const c of this.countries) {
@@ -144,7 +145,7 @@ import { setTransitionHooks } from 'vue';
                 
             } catch (error) {
                 alert('An error occurred: ', error)
-            }
+            }*/
         },
         methods: {
             back() {
@@ -153,6 +154,7 @@ import { setTransitionHooks } from 'vue';
             async addUser() {
                 this.invalidInput = '';
                 let user = this.user;
+                const pattern = /^\d{7,15}$/;
 
                 try {
                     if(user.firstname == null ||user.firstname == '' || user.lastname == null || user.lastname == '' ||
@@ -165,21 +167,27 @@ import { setTransitionHooks } from 'vue';
 
                     } else if(this.password != this.confirmpassword) {
                         this.invalidInput = 'Password mismatch.';
-
-                    } else {
+                    }/* else if(pattern.test(user.phoneNumber))
+                        this.invalidInput = 'Invalide phone-number'*/
+                    else {
                         const formData = new URLSearchParams();
 
                         formData.append('firstname', user.firstname.charAt(0).toUpperCase() + user.firstname.slice(1));
                         formData.append('lastname', user.lastname.charAt(0).toUpperCase() + user.lastname.slice(1));
                         formData.append('email', user.email);
-                        formData.append('password', this.password);
-                        formData.append('number', BigInt(0));
+                        formData.append('passwordHash', this.password);
+                        formData.append('phoneNumber', 12345678);
 
                         if(this.dob != new Date()) 
                             formData.append('birthdate', this.dob);
+                        console.log(this.selectedRoles)
                         formData.append('roles', this.selectedRoles);
+                        const priviledgeValue = this.selectedRoles.includes(1) ? [1] : [2];
+                        formData.append('priviledgeRoles', priviledgeValue);
 
-                        const response = await axios.post('users/add', formData);
+                        const response = await axios.post('users/add', formData, {
+                            withCredentials: true
+                        });
 
                         if (response.status === 200 && response.data) {
                             this.$router.push({name: 'Home'});
@@ -188,15 +196,17 @@ import { setTransitionHooks } from 'vue';
                         }
                     }
                 } catch (error) {
-                   alert(error.response.data)
+                   alert(error)
                 }
+            },
+            handleDateUpdate(newDate) {
+                this.dob = newDate;
             }
         }
     };
 </script>
 
 <style scoped>
-    .title {
         margin-top: 10px;
         color: black;
         font-size: 30px;
