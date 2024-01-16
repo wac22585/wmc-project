@@ -63,7 +63,6 @@ router.beforeEach(async (to, from, next) => {
       const response = await axios.get("/auth/status", {
         withCredentials: true
       });
-      console.log(response.data)
       userAuthStatus.isAuthenticated = response.data.authenticated;
       userAuthStatus.isAdmin = response.data.admin;
       

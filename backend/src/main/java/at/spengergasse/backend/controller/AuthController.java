@@ -84,24 +84,6 @@ public class AuthController {
     @ApiResponse(responseCode = "200", description = "Logged out successfully.")
     @DeleteMapping("/logout")
     public ResponseEntity<?> logout(HttpServletResponse response) {
-
-        /*String accessToken = null;
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if ("accessToken".equals(cookie.getName())) {
-                    accessToken = cookie.getValue();
-                    break;
-                }
-            }
-        }
-
-        if(accessToken != null) {
-            String email = jwtService.extractUsername(accessToken);
-            User user = userRepository.findByEmail(email);
-            refreshTokenService.deleteByUser(user);
-        }*/
-
         ResponseCookie cookie = ResponseCookie.from("accessToken", "")
                 .httpOnly(true)
                 .secure(false)
