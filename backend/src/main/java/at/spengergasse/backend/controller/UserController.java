@@ -3,15 +3,15 @@ package at.spengergasse.backend.controller;
 import at.spengergasse.backend.dto.UserDTO;
 import at.spengergasse.backend.dto.UserRequest;
 import at.spengergasse.backend.model.*;
+import at.spengergasse.backend.persistence.RoleRepository;
 import at.spengergasse.backend.persistence.UserRepository;
-import at.spengergasse.backend.service.JwtService;
+import at.spengergasse.backend.persistence.UserRoleRepository;
 import at.spengergasse.backend.service.RefreshTokenService;
 import at.spengergasse.backend.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -26,17 +26,16 @@ public class UserController {
     UserRepository userRepository;
 
     @Autowired
+    RoleRepository roleRepository;
+
+    @Autowired
+    UserRoleRepository userRoleRepository;
+
+    @Autowired
     UserService userService;
 
     @Autowired
-    private JwtService jwtService;
-
-    @Autowired
     RefreshTokenService refreshTokenService;
-
-
-    @Autowired
-    private AuthenticationManager authenticationManager;
 
     @GetMapping("/all")
     public @ResponseBody Iterable<UserDTO> allUsers() {
@@ -72,31 +71,33 @@ public class UserController {
                 user.setEmail(userDTO.email());
                 user.setPhoneNumber(userDTO.phoneNumber());
                 user.setBirthdate(userDTO.birthdate());
-            /*List<UserRole> userRoles = new ArrayList<>();
+            List<UserRole> userRoles = new ArrayList<>();
+            userRoleRepository.deleteByUser(user);
             for (String roleName : userDTO.roles()) {
                 try {
                     ERoles roleEnum = ERoles.valueOf(roleName);
                     Role role = roleRepository.findByName(roleEnum);
 
                     UserRole userRole = UserRole.builder()
+                            .id(new UserRoleId(user.getId(), role.getId()))
                             .user(user)
                             .role(role)
                             .build();
-
                     userRoles.add(userRole);
+                    userRoleRepository.save(userRole);
                 } catch (IllegalArgumentException e) {
                     return new ResponseEntity("Error", HttpStatus.BAD_REQUEST);
                 }
             }
-            user.setRoles(userRoles);*/
-                userRepository.save(user);
-                return new ResponseEntity("OK", HttpStatusCode.valueOf(200));
+            user.setRoles(userRoles);
+            userRepository.save(user);
+            return new ResponseEntity("OK", HttpStatusCode.valueOf(200));
             }
             return new ResponseEntity("User could not be found. Please try again.", HttpStatus.NOT_FOUND);
         } catch(Exception e) {
+            System.out.println("Error " + e);
             return new ResponseEntity("Something went wrong. Please try again.", HttpStatus.BAD_REQUEST);
         }
-
     }
 
     @PutMapping("delete/{id}")
@@ -107,7 +108,6 @@ public class UserController {
             try
             {
                 user.setIsDeleted(true);
-                //user.setDeleted(LocalDateTime.now());
                 userRepository.save(user);
                 return new ResponseEntity("OK", HttpStatusCode.valueOf(200));
             } catch (Exception e)
