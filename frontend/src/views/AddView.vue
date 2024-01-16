@@ -31,7 +31,8 @@
                     </v-col>
                     <v-col>
                         <label for="">Phone-Number</label>
-                        <InputField class="inputfield" v-model="user.phoneNumber"></InputField>
+                        <InputField class="inputfield" :model-value="user.phoneNumber" 
+                        @update:model-value="newValue => user.phoneNumber = newValue"></InputField>
                     </v-col>
                 </v-row>
 
@@ -93,20 +94,22 @@
         </div>
     </v-container>
 </template>
-  
-<script>
+
+<script setup>
     import InputField from '@/components/Input.vue';
     import Btn from '@/components/Button.vue';
     import DatePicker from '@/components/DatePicker.vue';
     import axios from 'axios';
     import LoginView from './LoginView.vue';
-import { setTransitionHooks } from 'vue';
-
+</script>
+  
+<script>
     export default {
         components: {
             InputField,
             DatePicker,
             Btn,
+            LoginView,
         },
         data() {
             return {
@@ -134,18 +137,6 @@ import { setTransitionHooks } from 'vue';
             } catch (error) {
                 alert('An error occurred: ', error)
             }
-
-            /*try {
-                const response = await axios.get('/countries/all');
-                this.countries = response.data;
-                for(const c of this.countries) {
-                    let text = '+' + c.dialCode + ' (' + c.countrycode + ')';
-                    c.text = text;
-                }
-                
-            } catch (error) {
-                alert('An error occurred: ', error)
-            }*/
         },
         methods: {
             back() {
@@ -154,7 +145,6 @@ import { setTransitionHooks } from 'vue';
             async addUser() {
                 this.invalidInput = '';
                 let user = this.user;
-                const pattern = /^\d{7,15}$/;
 
                 try {
                     if(user.firstname == null ||user.firstname == '' || user.lastname == null || user.lastname == '' ||
@@ -167,8 +157,8 @@ import { setTransitionHooks } from 'vue';
 
                     } else if(this.password != this.confirmpassword) {
                         this.invalidInput = 'Password mismatch.';
-                    }/* else if(pattern.test(user.phoneNumber))
-                        this.invalidInput = 'Invalide phone-number'*/
+                    } else if(!(/^\d{7,15}$/.test(user.phoneNumber)))
+                        this.invalidInput = 'Invalide phone-number'
                     else {
                         const formData = new URLSearchParams();
 
@@ -176,7 +166,7 @@ import { setTransitionHooks } from 'vue';
                         formData.append('lastname', user.lastname.charAt(0).toUpperCase() + user.lastname.slice(1));
                         formData.append('email', user.email);
                         formData.append('passwordHash', this.password);
-                        formData.append('phoneNumber', 12345678);
+                        formData.append('phoneNumber', user.phoneNumber);
 
                         if(this.dob != new Date()) 
                             formData.append('birthdate', this.dob);

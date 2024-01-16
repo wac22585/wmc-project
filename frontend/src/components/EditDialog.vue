@@ -15,8 +15,6 @@
         <v-select
             :rules="[rules.required, rules.roles]"
             :items="roles"
-            item-title="name"
-            item-value="id"
             v-model="selectedRoles"
             bg-color="none"
             variant="underlined"
@@ -81,10 +79,6 @@
             }
         },
         async mounted() {
-            try{
-            } catch(error) {
-                alert(error);
-            }
             try {
                 if(this.id == null) {
                     this.id = localStorage.getItem('id');
@@ -100,9 +94,10 @@
                
                 const roles = await axios.get('roles/all');
                 this.roles = roles.data;
+                this.roles = this.roles.map(role => role.name);
                 this.selectedRoles = this.user.roles.map(userRoleName => {
-                    let matchingRole = this.roles.find(role => role.name === userRoleName);
-                    return matchingRole ? matchingRole.id : null;
+                    let matchingRole = this.roles.find(role => role === userRoleName);
+                    return matchingRole;
                 }).filter(id => id !== null);
             } catch(error) {
                 alert(error);
@@ -138,6 +133,8 @@
                 if(!this.isAccount && this.validateField(this.selectedRoles, [rules.required, rules.roles]) !== true) return;
 
                 try {  
+                    console.log(this.user.roles, this.selectedRoles)
+                    this.user.roles = this.selectedRoles;
                     const response = await axios.put(`users/update/${this.id}`, this.user);
                     if (response.status === 200) {
                         this.$router.push({ name: 'Home' });
@@ -145,7 +142,7 @@
                        alert(response.data)
                     }
                 } catch (error) {
-                  alert(error.response.data)
+                  alert(error)
                 }
             }
         }
